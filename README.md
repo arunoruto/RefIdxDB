@@ -1,4 +1,8 @@
-![](.github/refidxdb-logo.png)
+<!-- ![](.github/refidxdb-logo.png) -->
+
+<p align="center">
+  <img src="https://github.com/arunoruto/RefIdxDB/blob/master/.github/logo.png?raw=true" alt="RefIdxDB-Logo"/>
+</p>
 
 # RefIdxDB
 

@@ -6,13 +6,42 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  pypi-publish:
+    name: Upload release to PyPI
     runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/refidxdb/
     permissions:
       id-token: write
     steps:
-      - uses: actions/checkout@v4
-      - name: Build and publish to pypi
-        uses: JRubics/poetry-publish@v1.17
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
-          pypi_token: ${{ secrets.PYPI_TOKEN }}
+          python-version: "3.12"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+
+      - name: Update PATH
+        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Update Poetry configuration
+        run: poetry config virtualenvs.create false
+
+      - name: Install dependencies
+        run: poetry install --sync --no-interaction
+
+      - name: Package project
+        run: poetry build
+
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+      # - uses: actions/checkout@v4
+      # - name: Build and publish to pypi
+      #   uses: JRubics/poetry-publish@v1.17
+      #   with:
+      #     pypi_token: ${{ secrets.PYPI_TOKEN }}

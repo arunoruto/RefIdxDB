@@ -67,3 +67,14 @@ The header is prefixed by a hashtag `#`. The `FORMAT` value gives information ab
 Both wavelengths `WAVL` and wave numbers `WAVN` will be read correctly and transformed into wavelengths
 with no SI prefix (meters [m]). The default scales for wavelengths and wave numbers are 1e-6 (micrometers)
 and 1e2 (centimeters^-1).
+
+## Similar projects
+
+RefIdxDB is, to the best of my knowledge,
+the only project that tries to unify multiple databases under one API.
+Nevertheless, there are projects that have tried to achieve the same for a single database:
+
+- [refractiveindex](https://pypi.org/project/refractiveindex/)
+- [PyTMM](https://github.com/kitchenknif/PyTMM) - the API is implemented in
+  [refractiveindex.py](https://github.com/kitchenknif/PyTMM/blob/master/PyTMM/refractiveIndex.py)
+- [PyOptik](https://github.com/MartinPdeS/PyOptik)

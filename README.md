@@ -25,8 +25,45 @@ pip install refidxdb
 ```
 
 After the `pip` command, the `refidxdb` command should be available.
-The main purpose of this command is to download and cache the databases locally.
-They will be downloaded to `$HOME/.cache/refidxdb` under a folder corresponding to the class name.
+
+## CLI
+
+The main purpose of the CLI is to download and cache the databases locally and interact with it.
+The data will be downloaded to `$HOME/.cache/refidxdb` under a folder corresponding to the class name.
+Please use `refidxdb --help` to explore the functionality.
+
+Example:
+
+```console
+$ # Download all databases
+$ # equivalent to refidxdb db --download aria,refidx
+$ refidxdb db --download all
+Downloading the database for RefIdx from https://github.com/polyanskiy/refractiveindex.info-database/releases/download/v2024-08-14/rii-database-2024-08-14.zip to /home/mar/.cache/refidxdb/RefIdx
+Downloading the database for Aria from https://eodg.atm.ox.ac.uk/ARIA/data_files/ARIA.zip to /home/mar/.cache/refidxdb/Aria
+All databases downlaoded!
+Bye :)
+
+$ # Replace table with plot to diplay a graph of the data in the terminal
+$ refidxdb show --db aria --data "data_files/Minerals/Olivine/z_orientation_(Fabian_et_al._2001)/olivine_Z_Fabian_2001.ri" --display table --bounds 2.5,15.5
+shape: (2_748, 3)
+┌───────────┬──────────┬──────────┐
+│ w         ┆ n        ┆ k        │
+│ ---       ┆ ---      ┆ ---      │
+│ f64       ┆ f64      ┆ f64      │
+╞═══════════╪══════════╪══════════╡
+│ 2.500617  ┆ 1.619696 ┆ 0.000053 │
+│ 2.501381  ┆ 1.619685 ┆ 0.000053 │
+│ 2.502144  ┆ 1.619674 ┆ 0.000053 │
+│ 2.502909  ┆ 1.619663 ┆ 0.000053 │
+│ 2.503674  ┆ 1.619652 ┆ 0.000053 │
+│ …         ┆ …        ┆ …        │
+│ 15.369648 ┆ 1.42662  ┆ 0.036282 │
+│ 15.398545 ┆ 1.419686 ┆ 0.036761 │
+│ 15.427528 ┆ 1.412672 ┆ 0.037256 │
+│ 15.456643 ┆ 1.405576 ┆ 0.037768 │
+│ 15.485869 ┆ 1.398394 ┆ 0.038299 │
+└───────────┴──────────┴──────────┘
+```
 
 ## API
 

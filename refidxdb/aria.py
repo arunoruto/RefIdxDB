@@ -4,9 +4,6 @@ from .refidxdb import RefIdxDB
 
 
 class Aria(RefIdxDB):
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
-
     @property
     def url(self) -> str:
         return "https://eodg.atm.ox.ac.uk/ARIA/data_files/ARIA.zip"
@@ -31,10 +28,24 @@ class Aria(RefIdxDB):
     def nk(self):
         if self.data is None:
             raise Exception("Data could not have been loaded")
+        # Using a small trick
+        # micro is 10^-6 and 1/centi is 10^2,
+        # but we will use 10^-2, since the value needs to be inverted
+        local_scale = 1e-6 if "WAVL" in self.data.columns else 1e-2
+        if self._wavelength:
+            w = (
+                self.data["WAVL"]
+                if ("WAVL" in self.data.columns)
+                else 1 / (self.data["WAVN"])
+            ) * local_scale
+        else:
+            w = (
+                self.data["WAVN"]
+                if ("WAVN" in self.data.columns)
+                else 1 / (self.data["WAVL"])
+            ) / local_scale
         nk = {
-            "w": self.data["WAVL"] * self.scale
-            if (self._wavelength and ("WAVL" in self.data.columns))
-            else 1 / (self.data["WAVN"] * self.scale),
+            "w": w,
             "n": self.data["N"] if ("N" in self.data.columns) else None,
             "k": self.data["K"] if ("K" in self.data.columns) else None,
         }

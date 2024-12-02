@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "refidxdb"
-version = "0.0.2"
+version = "0.0.3"
 description = "Python interface for various refractive index databases"
 authors = ["Mirza Arnaut <mirza.arnaut45@gmail.com>"]
 license = "MIT"

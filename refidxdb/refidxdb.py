@@ -9,6 +9,9 @@ import polars as pl
 
 
 class RefIdxDB(ABC):
+    _data: pl.DataFrame | None
+    _nk: pl.DataFrame | None
+
     def __init__(
         self,
         path: str | None = None,
@@ -18,6 +21,8 @@ class RefIdxDB(ABC):
         self._path = path
         self._wavelength = wavelength
         self._scale = scale
+        self._data = None
+        self._nk = None
 
     @property
     def cache_dir(self) -> str:
@@ -75,7 +80,9 @@ class RefIdxDB(ABC):
         and place it in <cache_dir>.
         """
         if self.url.split(".")[-1] == "zip":
-            print(f"Downloading the database for {self.__class__.__name__} from {self.url} to {self.cache_dir}")
+            print(
+                f"Downloading the database for {self.__class__.__name__} from {self.url} to {self.cache_dir}"
+            )
             http_response = urlopen(self.url)
             file = ZipFile(BytesIO(http_response.read()))
             file.extractall(path=self.cache_dir)
@@ -98,7 +105,19 @@ class RefIdxDB(ABC):
         """
         pass
 
-    def interpolate(self, target, scale:float=1e-6, complex: bool = False) -> pl.datatypes.DataType:
+    def interpolate(
+        self,
+        target,
+        scale: float | None = None,
+        complex: bool = False,
+    ) -> pl.datatypes.DataType:
+        if scale is None:
+            if self._wavelength:
+                scale = 1e-6
+            else:
+                scale = 1e2
+
+        print(scale)
         interpolated = pl.DataFrame(
             dict(
                 {"w": target},

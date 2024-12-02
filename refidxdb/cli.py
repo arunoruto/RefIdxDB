@@ -1,19 +1,14 @@
 # Guide: https://medium.com/clarityai-engineering/how-to-create-and-distribute-a-minimalist-cli-tool-with-python-poetry-click-and-pipx-c0580af4c026
+import sys
+from pathlib import Path
 
 import click
 import plotext as plt
 import polars as pl
+from streamlit import runtime
+from streamlit.web import cli as stcli
 
-from .aria import Aria
-from .refidx import RefIdx
-from .refidxdb import RefIdxDB
-
-pl.Config.set_fmt_str_lengths(100)
-
-DBS = dict(
-    refidx=RefIdx,
-    aria=Aria,
-)
+from refidxdb import Aria, RefIdx, RefIdxDB, databases
 
 
 @click.group()
@@ -43,9 +38,10 @@ def db(download, clean) -> None:
 
 def download_db(dbs: str):
     if dbs == "all":
-        download_list = list(DBS.values())
+        download_list = list(databases.values())
     else:
-        download_list = [DBS[item] for item in dbs.split(",")]
+        db_list = [item.lower() for item in dbs.split(",")]
+        download_list = [databases[item] for item in db_list]
 
     for Source in download_list:
         db = Source()
@@ -84,7 +80,8 @@ def show(db, data, display, bounds) -> None:
         nk = nk.filter((pl.col("w") > bounds[0]) & (pl.col("w") < bounds[1]))
     match str.lower(display):
         case "table":
-            click.echo(nk)
+            with pl.Config(tbl_rows=1000):
+                click.echo(nk)
         case "graph":
             if "n" in df.nk.columns:
                 plt.plot(nk["w"], nk["n"], label="n")
@@ -106,3 +103,11 @@ def parse_source(db, data) -> RefIdxDB:
             return Aria(data)
         case _:
             raise Exception(f"Provided {db} is not supported!")
+
+
+@cli.command(help="""Explore data using Streamlit""")
+def explore():
+    if not runtime.exists():
+        print(Path(__file__).parent)
+        sys.argv = ["streamlit", "run", f"{Path(__file__).parent}/app.py"]
+        sys.exit(stcli.main())

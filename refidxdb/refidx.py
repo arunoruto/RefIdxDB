@@ -1,5 +1,7 @@
 from io import StringIO
 
+import numpy as np
+import numpy.typing as npt
 import polars as pl
 import yaml
 
@@ -7,8 +9,11 @@ from .refidxdb import RefIdxDB
 
 
 class RefIdx(RefIdxDB):
-    # def __init__(self, *args, **kwargs):
-    #     super().__init__(*args, **kwargs)
+    """
+    Handler for the refractiveindex.info database.
+    Polyanskiy, M.N. Refractiveindex.info database of optical constants. Sci Data 11, 94 (2024).
+    https://doi.org/10.1038/s41597-023-02898-2
+    """
 
     @property
     def url(self) -> str:
@@ -16,24 +21,123 @@ class RefIdx(RefIdxDB):
 
     @property
     def data(self):
-        absolute_path = f"{self.cache_dir}/{self._path}"
         if self._path is None:
             raise Exception("Path is not set, cannot retrieve any data!")
+
+        if self._path.startswith("/"):
+            absolute_path = self._path
+        else:
+            absolute_path = f"{self.cache_dir}/{self._path}"
+
         with open(absolute_path, "r") as f:
             data = yaml.safe_load(f)
             return data
 
     @property
     def nk(self):
+        if self._nk is not None:
+            return self._nk
+
         nk = pl.DataFrame(schema={"w": float, "n": float, "k": float})
+        storage = []
+        for i, data in enumerate(self.data["DATA"]):
+            match data["type"]:
+                case "tabulated nk":
+                    storage.append(
+                        pl.read_csv(
+                            StringIO(data["data"]),
+                            new_columns=["w", "n", "k"],
+                            separator=" ",
+                        )
+                    )
+                    # nk = pl.concat([nk, _nk], how="vertical")
+                case "tabulated n":
+                    storage.append(
+                        pl.read_csv(
+                            StringIO(data["data"]),
+                            new_columns=["w", "n"],
+                            separator=" ",
+                        ).with_columns(k=pl.lit(None))
+                    )
+                    # nk = pl.concat(
+                    #     [nk, _nk], how="vertical"
+                    # )
+                case "tabulated k":
+                    storage.append(
+                        pl.read_csv(
+                            StringIO(data["data"]),
+                            new_columns=["w", "k"],
+                            separator=" ",
+                        )
+                        .with_columns(n=pl.lit(None))
+                        .select(["w", "n", "k"])
+                    )
+                # nk = pl.concat(
+                #     [nk, _nk],
+                #     how="vertical",
+                # )
+                case "formula 2":
+                    storage.append(formula(2, data))
+                    # nk = pl.concat([nk, formula(2, data)], how="vertical")
+                case "formula 3":
+                    storage.append(formula(3, data))
+                    # nk = pl.concat([nk, formula(3, data)], how="vertical")
+                case _:
+                    raise Exception(f"Unsupported data type: {data['type']}")
 
-        for data in self.data["DATA"]:
-            if data["type"] == "tabulated nk":
-                _nk = pl.read_csv(
-                    StringIO(data["data"]),
-                    new_columns=["w", "n", "k"],
-                    separator=" ",
-                )
-                nk = pl.concat([nk, _nk], how="vertical")
+        self._nk = (
+            pl.concat([nk, *storage], how="vertical")
+            .with_columns(pl.col("w").mul(self.scale))
+            .sort("w")
+        )
+        return self._nk
 
-        return nk.with_columns(pl.col("w").mul(self.scale)).sort("w")
+
+def formula(number: int, data):
+    """
+    Get formula from the source paper.
+    """
+    w_range = [float(s) for s in data["wavelength_range"].split()]
+    coefficients = np.array([float(s) for s in data["coefficients"].split()])
+    match number:
+        case 1:
+            raise Exception(f"Support incomming for formula {number}")
+        case 2:
+            f = formula2(coefficients)
+        case 3:
+            f = formula3(coefficients)
+        case 4:
+            raise Exception(f"Support incomming for formula {number}")
+        case 5:
+            raise Exception(f"Support incomming for formula {number}")
+        case 6:
+            raise Exception(f"Support incomming for formula {number}")
+        case 7:
+            raise Exception(f"Support incomming for formula {number}")
+        case 8:
+            raise Exception(f"Support incomming for formula {number}")
+        case 9:
+            raise Exception(f"Support incomming for formula {number}")
+    w = np.linspace(w_range[0], w_range[1], 100)
+    return pl.DataFrame({"w": w, "n": f(w)}).with_columns(k=pl.lit(None))
+
+
+# Used by https://refractiveindex.info/?shelf=glass&book=OHARA-BAL&page=S-BAL2
+def formula2(c: npt.NDArray):
+    """
+    Equation 2 in source paper.
+    """
+    return lambda x: 1 + np.sqrt(
+        c[0]
+        + np.sum(np.outer(x**2, c[1::2]) / np.subtract.outer(x**2, c[2::2]), axis=1)
+    )
+
+
+# Used by glass/ohara/BAL2
+def formula3(c: npt.NDArray):
+    """
+    Equation 3 in source paper.
+    """
+    return lambda x: np.sqrt(
+        c[0] + np.sum(c[1::2] * np.power.outer(x, c[2::2]), axis=1)
+    )

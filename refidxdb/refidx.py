@@ -50,7 +50,6 @@ class RefIdx(RefIdxDB):
                             separator=" ",
                         )
                     )
-                    # nk = pl.concat([nk, _nk], how="vertical")
                 case "tabulated n":
                     storage.append(
                         pl.read_csv(
@@ -59,9 +58,6 @@ class RefIdx(RefIdxDB):
                             separator=" ",
                         ).with_columns(k=pl.lit(None))
                     )
-                    # nk = pl.concat(
-                    #     [nk, _nk], how="vertical"
-                    # )
                 case "tabulated k":
                     storage.append(
                         pl.read_csv(
@@ -72,16 +68,12 @@ class RefIdx(RefIdxDB):
                         .with_columns(n=pl.lit(None))
                         .select(["w", "n", "k"])
                     )
-                # nk = pl.concat(
-                #     [nk, _nk],
-                #     how="vertical",
-                # )
+                case "formula 1":
+                    storage.append(formula(1, data))
                 case "formula 2":
                     storage.append(formula(2, data))
-                    # nk = pl.concat([nk, formula(2, data)], how="vertical")
                 case "formula 3":
                     storage.append(formula(3, data))
-                    # nk = pl.concat([nk, formula(3, data)], how="vertical")
                 case _:
                     raise Exception(f"Unsupported data type: {data['type']}")
 
@@ -101,7 +93,8 @@ def formula(number: int, data):
     coefficients = np.array([float(s) for s in data["coefficients"].split()])
     match number:
         case 1:
-            raise Exception(f"Support incomming for formula {number}")
+            f = formula1(coefficients)
+            print(f(2))
         case 2:
             f = formula2(coefficients)
         case 3:
@@ -122,14 +115,23 @@ def formula(number: int, data):
     return pl.DataFrame({"w": w, "n": f(w)}).with_columns(k=pl.lit(None))
 
 
+# other/semiconductor alloys/AlAs-GaAs/Perner-0.yml
+def formula1(c: npt.NDArray):
+    """
+    Equation 1 in source paper.
+    """
+    c_mod = c
+    c_mod[2::2] = c[2::2] ** 2
+    return formula2(c_mod)
+
+
 # Used by https://refractiveindex.info/?shelf=glass&book=OHARA-BAL&page=S-BAL2
 def formula2(c: npt.NDArray):
     """
     Equation 2 in source paper.
     """
-    return lambda x: 1 + np.sqrt(
-        c[0]
-        + np.sum(np.outer(x**2, c[1::2]) / np.subtract.outer(x**2, c[2::2]), axis=1)
+    return lambda x: np.sqrt(
+        1 + c[0] + np.sum(c[1::2] / (1 - np.outer(1 / x**2, c[2::2])), axis=1)
     )
 
 

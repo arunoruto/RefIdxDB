@@ -63,6 +63,15 @@ shape: (2_748, 3)
 │ 15.456643 ┆ 1.405576 ┆ 0.037768 │
 │ 15.485869 ┆ 1.398394 ┆ 0.038299 │
 └───────────┴──────────┴──────────┘
+
+$ # Explore the databases using streamlit
+$ refidxdb explore
+/home/user/Projects/refidxdb/refidxdb
+
+  You can now view your Streamlit app in your browser.
+
+  Local URL: http://localhost:8501
+  Network URL: http://10.42.42.212:8501
 ```
 
 ## API
@@ -96,6 +105,11 @@ with each data type being referenced.
 Currently, supported data types are:
 
 - `tabulated_nk`
+- `tabulated_n`
+- `tabulated_k`
+- `formula 1`
+- `formula 2`
+- `formula 3`
 
 ### [ARIA - Aerosol Refractive Index Archive](https://eodg.atm.ox.ac.uk/ARIA/)
 

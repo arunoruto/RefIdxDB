@@ -109,5 +109,5 @@ def parse_source(db, data) -> RefIdxDB:
 def explore():
     if not runtime.exists():
         print(Path(__file__).parent)
-        sys.argv = ["streamlit", "run", f"{Path(__file__).parent}/app.py"]
+        sys.argv = ["streamlit", "run", f"{Path(__file__).parent.parent}/app.py"]
         sys.exit(stcli.main())

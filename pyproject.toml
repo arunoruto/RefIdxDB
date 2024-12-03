@@ -6,7 +6,7 @@ readme = "README.md"
 authors = [
     {name = "Mirza Arnaut", email = "mirza.arnaut45@gmail.com"},
 ]
-license = {text = "MIT"}
+license = {file = "LICENSE"}
 requires-python = "<4.0,>=3.10"
 dependencies = [
     "pyyaml<7.0.0,>=6.0.2",
@@ -19,18 +19,17 @@ dependencies = [
     "plotly<6.0.0,>=5.24.1",
 ]
 
-[project.scripts]
-refidxdb = "refidxdb.cli:cli"
-
-[tool.pdm.dev-dependencies]
+[project.optional-dependencies]
 test = [
     "pytest<9.0.0,>=8.3.3",
 ]
 
-[tool.pdm.build]
-includes = []
+[project.scripts]
+refidxdb = "refidxdb.cli:cli"
 
 [build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+# requires = ["pdm-backend"]
+# build-backend = "pdm.backend"
 

@@ -62,7 +62,11 @@
           devShells.default =
             let
               # Returns a function that can be passed to `python.withPackages`
-              arg = project.renderers.withPackages { inherit python; };
+              arg = project.renderers.withPackages {
+                inherit python;
+                # Include dev dependencies found under project.optional-dependencies
+                extras = [ "test" ];
+              };
 
               # Returns a wrapped environment (virtualenv like) with all our packages
               pythonEnv = python.withPackages arg;

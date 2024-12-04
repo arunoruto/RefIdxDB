@@ -1,20 +1,47 @@
+# Sources:
+# https://pyproject-nix.github.io/pyproject.nix/use-cases/pyproject.html
+# https://pyproject-nix.github.io/uv2nix/usage/hello-world.html
+
 {
-  description = "A basic flake using pyproject.toml project metadata";
+  description = "RefIdxDB flake devenv";
 
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+
     pyproject-nix = {
       url = "github:pyproject-nix/pyproject.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    flake-parts.url = "github:hercules-ci/flake-parts";
+
+    uv2nix = {
+      url = "github:pyproject-nix/uv2nix";
+      inputs = {
+        pyproject-nix.follows = "pyproject-nix";
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
+
+    pyproject-build-systems = {
+      url = "github:pyproject-nix/build-system-pkgs";
+      inputs = {
+        pyproject-nix.follows = "pyproject-nix";
+        uv2nix.follows = "uv2nix";
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
+
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+    };
   };
 
   outputs =
     inputs@{
       flake-parts,
       nixpkgs,
+      uv2nix,
       pyproject-nix,
+      pyproject-build-systems,
       ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
@@ -23,72 +50,96 @@
       ];
       perSystem =
         {
-          config,
           self',
-          inputs',
           pkgs,
-          system,
+          lib,
           ...
         }:
         let
-          # Loads pyproject.toml into a high-level project representation
-          # Do you notice how this is not tied to any `system` attribute or package sets?
-          # That is because `project` refers to a pure data representation.
-          project = pyproject-nix.lib.project.loadPyproject {
-            # Read & unmarshal pyproject.toml relative to this project root.
-            # projectRoot is also used to set `src` for renderers such as buildPythonPackage.
-            projectRoot = ./.;
+          project = pyproject-nix.lib.project.loadPyproject { projectRoot = ./.; };
+          workspace = uv2nix.lib.workspace.loadWorkspace { workspaceRoot = ./.; };
+
+          overlay = workspace.mkPyprojectOverlay {
+            sourcePreference = "wheel";
           };
 
-          # This example is only using x86_64-linux
-          # pkgs = nixpkgs.legacyPackages.x86_64-linux;
+          pyprojectOverrides = _final: _prev: {
+            # Implement build fixups here.
+          };
 
-          # We are using the default nixpkgs Python3 interpreter & package set.
-          #
-          # This means that you are purposefully ignoring:
-          # - Version bounds
-          # - Dependency sources (meaning local path dependencies won't resolve to the local path)
-          #
-          # To use packages from local sources see "Overriding Python packages" in the nixpkgs manual:
-          # https://nixos.org/manual/nixpkgs/stable/#reference
-          #
-          # Or use an overlay generator such as uv2nix:
-          # https://github.com/pyproject-nix/uv2nix
           python = pkgs.python3;
+
+          pythonSet =
+            (pkgs.callPackage pyproject-nix.build.packages {
+              inherit python;
+            }).overrideScope
+              (
+                lib.composeManyExtensions [
+                  pyproject-build-systems.overlays.default
+                  overlay
+                  pyprojectOverrides
+                ]
+              );
 
         in
         {
-          # Create a development shell containing dependencies from `pyproject.toml`
-          devShells.default =
-            let
-              # Returns a function that can be passed to `python.withPackages`
-              arg = project.renderers.withPackages {
-                inherit python;
-                # Include dev dependencies found under project.optional-dependencies
-                extras = [ "test" ];
+          packages = {
+            default = self'.packages.refidxdb;
+            refidxdb = python.pkgs.buildPythonPackage (
+              (project.renderers.buildPythonPackage { inherit python; }) // { env.CUSTOM_ENVVAR = "hello"; }
+            );
+            refidxdb-env = pythonSet.mkVirtualEnv "refidxdb-env" workspace.deps.default;
+          };
+
+          devShells = {
+            default =
+              let
+                arg = project.renderers.withPackages {
+                  inherit python;
+                  extras = [ "test" ];
+                };
+
+                pythonEnv = python.withPackages arg;
+              in
+              pkgs.mkShell {
+                packages = [
+                  pythonEnv
+                  self'.packages.refidxdb
+                ];
               };
 
-              # Returns a wrapped environment (virtualenv like) with all our packages
-              pythonEnv = python.withPackages arg;
-
-            in
-            # Create a devShell like normal.
-            pkgs.mkShell {
+            impure = pkgs.mkShell {
               packages = [
-                pythonEnv
-                self'.packages.default
+                python
+                pkgs.uv
               ];
+              shellHook = ''
+                unset PYTHONPATH
+              '';
             };
 
-          # Build our package using `buildPythonPackage
-          packages.default =
-            let
-              # Returns an attribute set that can be passed to `buildPythonPackage`.
-              attrs = project.renderers.buildPythonPackage { inherit python; };
-            in
-            # Pass attributes to buildPythonPackage.
-            # Here is a good spot to add on any missing or custom attributes.
-            python.pkgs.buildPythonPackage (attrs // { env.CUSTOM_ENVVAR = "hello"; });
+            uv2nix =
+              let
+                editableOverlay = workspace.mkEditablePyprojectOverlay {
+                  root = "$REPO_ROOT";
+                };
+
+                editablePythonSet = pythonSet.overrideScope editableOverlay;
+
+                virtualenv = editablePythonSet.mkVirtualEnv "refidxdb-dev-env" workspace.deps.default;
+
+              in
+              pkgs.mkShell {
+                packages = [
+                  virtualenv
+                  pkgs.uv
+                ];
+                shellHook = ''
+                  unset PYTHONPATH
+                  export REPO_ROOT=$(git rev-parse --show-toplevel)
+                '';
+              };
+          };
         };
     };
 }

@@ -9,14 +9,14 @@ authors = [
 license = {file = "LICENSE"}
 requires-python = "<4.0,>=3.10"
 dependencies = [
-    "pyyaml<7.0.0,>=6.0.2",
-    # "pandas<3.0.0,>=2.2.3",
-    "polars<2.0.0,>=1.12.0",
-    "numpy<3.0.0,>=1.26.4",
-    "click<9.0.0,>=8.1.7",
-    "plotext<6.0.0,>=5.2.8",
-    "streamlit<2.0.0,>=1.40.1",
-    "plotly<6.0.0,>=5.24.1",
+    "numpy<2.0.0,>=1.26.4",
+    "polars>=1.12.0",
+    "streamlit>=1.40.1",
+    "plotly>=5.24.1",
+    "pyyaml>=6.0.2",
+    "click>=8.1.7",
+    "plotext>=5.2.8",
+    "tqdm>=4.66.5",
 ]
 
 [project.optional-dependencies]

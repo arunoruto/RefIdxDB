@@ -6,6 +6,9 @@ from zipfile import ZipFile
 
 import numpy as np
 import polars as pl
+from tqdm import tqdm
+
+CHUNK_SIZE = 8192
 
 
 class RefIdxDB(ABC):
@@ -80,11 +83,22 @@ class RefIdxDB(ABC):
         and place it in <cache_dir>.
         """
         if self.url.split(".")[-1] == "zip":
-            print(
-                f"Downloading the database for {self.__class__.__name__} from {self.url} to {self.cache_dir}"
-            )
-            http_response = urlopen(self.url)
-            file = ZipFile(BytesIO(http_response.read()))
+            # print(
+            #     f"Downloading the database for {self.__class__.__name__} from {self.url} to {self.cache_dir}"
+            # )
+            response = urlopen(self.url)
+            total_size = int(response.headers.get("content-length", 0))
+            data = b""
+            with tqdm(
+                total=total_size,
+                unit="B",
+                unit_scale=True,
+                desc=self.__class__.__name__,
+            ) as progress:
+                while chunk := response.read(CHUNK_SIZE):
+                    data += chunk
+                    progress.update(len(chunk))
+            file = ZipFile(BytesIO(data))
             file.extractall(path=self.cache_dir)
         else:
             raise Exception("Extension not supported for being downloaded")

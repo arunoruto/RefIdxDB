@@ -23,9 +23,12 @@ file = st.selectbox(
     files,
     format_func=lambda x: "/".join(x.replace(cache_dir, "").split("/")[2:]),
 )
-print(file)
 
+logx = st.checkbox("Log x-axis", False)
 logy = st.checkbox("Log y-axis", False)
+
+with st.expander("Full file path"):
+    st.write(file)
 
 data = databases[db](file)
 nk = data.nk.with_columns(pl.col("w").truediv(data.scale))
@@ -46,8 +49,14 @@ fig.add_trace(
     )
 )
 fig.update_layout(
-    xaxis=dict(title=f"Wavelength in {data.scale}"),
-    yaxis=dict(title="Values", type="log" if logy else "linear"),
+    xaxis=dict(
+        title=f"Wavelength in {data.scale}",
+        type="log" if logx else "linear",
+    ),
+    yaxis=dict(
+        title="Values",
+        type="log" if logy else "linear",
+    ),
 )
 fig.update_traces(connectgaps=True)
 st.plotly_chart(fig, use_container_width=True)

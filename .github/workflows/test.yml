@@ -1,9 +1,10 @@
 name: Testing
 
 on:
-  push:
-    tags:
-      - "v*.*.*"
+  # push:
+  #   tags:
+  #     - "v*.*.*"
+  workflow_call:
   workflow_dispatch:
 
 jobs:
@@ -23,7 +24,15 @@ jobs:
       - name: Install dependencies
         run: uv sync --extra test
 
+      - name: Cache databases
+        id: cache-databases
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/refidxdb
+          key: ${{ runner.os }}-databases-${{ hashFiles('pyproject.toml') }}
+
       - name: Download databases
+        if: steps.cache-databases.outputs.cache-hit != 'true'
         run: uv run refidxdb db --download all
 
       - name: Test with pytest

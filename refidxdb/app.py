@@ -30,7 +30,7 @@ logy = st.checkbox("Log y-axis", False)
 with st.expander("Full file path"):
     st.write(file)
 
-data = databases[db](file)
+data = databases[db](path=file)
 nk = data.nk.with_columns(pl.col("w").truediv(data.scale))
 
 fig = go.Figure()

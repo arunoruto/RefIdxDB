@@ -16,7 +16,7 @@ CHUNK_SIZE = 8192
 class RefIdxDB(BaseModel, ABC):
     path: Optional[str] = Field(default=None)
     wavelength: bool = Field(default=True)
-    _scale: Optional[float]
+    # _scale: Optional[float]
 
     @property
     def cache_dir(self) -> str:

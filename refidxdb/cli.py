@@ -73,9 +73,10 @@ def download_db(dbs: str):
     "--bounds",
     help="Bounds for the graph. Two values separated by a comma, e.g., `1.5,3.56`",
 )
-def show(db, data, display, bounds) -> None:
+def show(db, data, display, bounds) -> None:  # pragma: no cover
+    scale = 1e-6
     df = parse_source(db, data)
-    nk = df.nk.with_columns(pl.col("w").truediv(df.scale))
+    nk = df.nk.with_columns(pl.col("w").truediv(scale))
     if bounds is not None:
         bounds = [float(val) for val in bounds.split(",")]
         if len(bounds) != 2:
@@ -91,25 +92,25 @@ def show(db, data, display, bounds) -> None:
             if "k" in df.nk.columns:
                 plt.plot(nk["w"], nk["k"], label="k")
             plt.title("Refractive index values")
-            plt.xlabel(f"Wavelength in {df.scale}")
+            plt.xlabel(f"Wavelength in {scale}")
             plt.ylabel("Values")
             plt.show()
         case _:
             raise Exception("Unsupported display option")
 
 
-def parse_source(db, data) -> RefIdxDB:
+def parse_source(db, data) -> RefIdxDB:  # pragma: no cover
     match str.lower(db):
         case "refidx":
-            return RefIdx(data)
+            return RefIdx(path=data)
         case "aria":
-            return Aria(data)
+            return Aria(path=data)
         case _:
             raise Exception(f"Provided {db} is not supported!")
 
 
 @cli.command(help="""Explore data using Streamlit""")
-def explore():
+def explore():  # pragma: no cover
     if not runtime.exists():
         print(Path(__file__).parent)
         sys.argv = ["streamlit", "run", f"{Path(__file__).parent}/app.py"]

@@ -53,3 +53,20 @@ def test_iron_querry():
     )
     # print(data, handler.nk)
     plt.assert_frame_equal(data, handler.nk)
+
+
+# express from https://refractiveindex.info/tmp/database/data-nk/glass/ohara/S-BAL2.html
+def test_ohara_sbal2():
+    def n(x):
+        return (
+            1
+            + 1.30923813 / (1 - 0.00838873953 / x**2)
+            + 0.114137353 / (1 - 0.0399436485 / x**2)
+            + 1.17882259 / (1 - 140.257892 / x**2)
+        ) ** 0.5
+
+    wn = RefIdx(path="database/data-nk/glass/ohara/S-BAL2.yml")
+    print(wn.nk)
+    w = wn.nk["w"].to_numpy() / wn.scale
+    print(wn.nk["n"])
+    print(w, n(w))

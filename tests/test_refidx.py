@@ -5,6 +5,7 @@ import polars as pl
 import polars.testing as plt
 import yaml
 
+from refidxdb.handler import Handler
 from refidxdb.refidx import RefIdx
 
 
@@ -45,3 +46,10 @@ def test_iron_querry():
     )
     interpolated = refidx.interpolate(groundtrouth["w"], scale=1e-6)
     plt.assert_frame_equal(groundtrouth, interpolated)
+
+    # Test handler version
+    handler = Handler(
+        url="https://refractiveindex.info/database/data-nk/main/Fe/Querry.yml"
+    )
+    # print(data, handler.nk)
+    plt.assert_frame_equal(data, handler.nk)

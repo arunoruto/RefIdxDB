@@ -1,4 +1,5 @@
 from refidxdb.aria import Aria
+from refidxdb.handler import Handler
 from refidxdb.refidx import RefIdx
 from refidxdb.refidxdb import RefIdxDB
 

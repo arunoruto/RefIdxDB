@@ -8,7 +8,10 @@ import polars as pl
 from streamlit import runtime
 from streamlit.web import cli as stcli
 
-from refidxdb import Aria, RefIdx, RefIdxDB, databases
+from refidxdb import databases
+from refidxdb.aria import Aria
+from refidxdb.refidx import RefIdx
+from refidxdb.refidxdb import RefIdxDB
 
 
 @click.group()

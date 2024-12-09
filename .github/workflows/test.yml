@@ -22,7 +22,9 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --extra test
-        # run: uv pip install -r pyproject.toml --extra test
+
+      - name: Download databases
+        run: uv run refidxdb db --download all
 
       - name: Test with pytest
         run: uv run pytest

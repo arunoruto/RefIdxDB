@@ -799,7 +799,7 @@ wheels = [
 
 [[package]]
 name = "refidxdb"
-version = "0.0.5"
+version = "0.0.6"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
@@ -829,7 +829,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.9.2" },
     { name = "pytest", marker = "extra == 'test'", specifier = ">=8.3.3,<9.0.0" },
     { name = "pyyaml", specifier = ">=6.0.2" },
-    { name = "rich", specifier = ">=13.9.4" },
+    { name = "rich", specifier = ">=13.8.1" },
     { name = "streamlit", specifier = ">=1.40.1" },
     { name = "tqdm", specifier = ">=4.66.5" },
 ]

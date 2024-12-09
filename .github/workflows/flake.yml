@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
   push:
     paths:
-    - '**.nix'
-    - '**.lock'
-    - '.github/workflows/flake.yml'
+      - "flake.nix"
+      - "flake.lock"
+      - ".github/workflows/flake.yml"
 
 jobs:
   check-flake:

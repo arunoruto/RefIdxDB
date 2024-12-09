@@ -1,4 +1,4 @@
-<!-- ![](.github/refidxdb-logo.png) -->
+[![PyPI version](https://badge.fury.io/py/refidxdb.svg)](https://badge.fury.io/py/refidxdb)
 
 <p align="center">
   <img src="https://github.com/arunoruto/RefIdxDB/blob/main/.github/logo.png?raw=true" alt="RefIdxDB-Logo"/>

@@ -1,5 +1,6 @@
 [![PyPI version](https://badge.fury.io/py/refidxdb.svg)](https://badge.fury.io/py/refidxdb)
 [![DeepSource](https://app.deepsource.com/gh/arunoruto/RefIdxDB.svg/?label=code+coverage&show_trend=true&token=6OxGvsq00pW0X5nKcAmq0vOQ)](https://app.deepsource.com/gh/arunoruto/RefIdxDB/)
+[![codecov](https://codecov.io/gh/arunoruto/RefIdxDB/graph/badge.svg?token=NQEJ466GGK)](https://codecov.io/gh/arunoruto/RefIdxDB)
 
 <p align="center">
   <img src="https://github.com/arunoruto/RefIdxDB/blob/main/.github/logo.png?raw=true" alt="RefIdxDB-Logo"/>

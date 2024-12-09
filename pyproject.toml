@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-test = ["pytest<9.0.0,>=8.3.3"]
+test = ["pytest>=8.3.3", "pytest-cov>=5.0.0"]
 
 [project.scripts]
 refidxdb = "refidxdb.cli:cli"

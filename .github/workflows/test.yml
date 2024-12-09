@@ -35,5 +35,12 @@ jobs:
         if: steps.cache-databases.outputs.cache-hit != 'true'
         run: uv run refidxdb db --download all
 
-      - name: Test with pytest
-        run: uv run pytest
+      - name: Test and coverage report with pytest
+        run: uv run pytest --cov=./ --cov-report xml
+
+      - name: Report test coverage to DeepSource
+        uses: deepsourcelabs/test-coverage-action@master
+        with:
+          key: python
+          coverage-file: coverage.xml
+          dsn: ${{ secrets.DEEPSOURCE_DSN }}

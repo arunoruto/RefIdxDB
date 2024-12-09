@@ -1,16 +1,25 @@
 name: Python package
 on:
+  # workflow_run:
+  #   workflows: ["Testing"]
+  #   branches: [main]
+  #   types:
+  #     - completed
+  workflow_dispatch:
   push:
     tags:
       - "v*.*.*"
-  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  testing:
+    uses: ./.github/workflows/test.yml
   pypi-publish:
     name: Upload release to PyPI
+    needs:
+      - testing
     runs-on: ubuntu-latest
     environment:
       name: pypi

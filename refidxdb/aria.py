@@ -1,4 +1,6 @@
 import re
+from functools import cached_property
+from typing import Optional
 
 import polars as pl
 
@@ -6,21 +8,30 @@ from .refidxdb import RefIdxDB
 
 
 class Aria(RefIdxDB):
+    _x_type: Optional[str] = "wavelength"
+
     @property
     def url(self) -> str:
         return "https://eodg.atm.ox.ac.uk/ARIA/data_files/ARIA.zip"
 
     @property
-    def data(self):
-        if self._data is not None:
-            return self._data
+    def scale(self) -> float:
+        match self._x_type:
+            case "wavelength":
+                return 1e-6
+            case "wavenumber":
+                return 1e2
+            case _:
+                raise Exception(f"Unsupported {self._x_type} type for x-axis")
 
-        if self._path is None:
+    @cached_property
+    def data(self):
+        if self.path is None:
             raise Exception("Path is not set, cannot retrieve any data!")
-        if self._path.startswith("/"):
-            absolute_path = self._path
+        if self.path.startswith("/"):
+            absolute_path = self.path
         else:
-            absolute_path = f"{self.cache_dir}/{self._path}"
+            absolute_path = f"{self.cache_dir}/{self.path}"
         with open(absolute_path, "r", encoding="cp1252") as f:
             data = f.readlines()
             header = [h for h in data if h.startswith("#")]
@@ -31,7 +42,10 @@ class Aria(RefIdxDB):
             data = [d.strip() for d in data if not d.startswith("#")]
             data = re.sub(r"[ \t]{1,}", " ", "\n".join(data))
 
-        self._data = pl.read_csv(
+        if "WAVN" in header["FORMAT"]:
+            self._x_type = "wavenumber"
+
+        return pl.read_csv(
             data.encode(),
             # new_columns=header["FORMAT"].split(" "),
             schema_overrides={h: pl.Float64 for h in header["FORMAT"].split(" ")},
@@ -39,19 +53,15 @@ class Aria(RefIdxDB):
             separator=" ",
         )
 
-        return self._data
-
-    @property
+    @cached_property
     def nk(self):
         if self.data is None:
             raise Exception("Data could not have been loaded")
-        if self._nk is not None:
-            return self._nk
         # Using a small trick
         # micro is 10^-6 and 1/centi is 10^2,
         # but we will use 10^-2, since the value needs to be inverted
         local_scale = 1e-6 if "WAVL" in self.data.columns else 1e-2
-        if self._wavelength:
+        if self.wavelength:
             w = (
                 self.data["WAVL"]
                 if ("WAVL" in self.data.columns)
@@ -69,5 +79,4 @@ class Aria(RefIdxDB):
             "k": self.data["K"] if ("K" in self.data.columns) else None,
         }
 
-        self._nk = pl.DataFrame(nk).sort("w")
-        return self._nk
+        return pl.DataFrame(nk).sort("w")

@@ -22,10 +22,10 @@ def test_olivine_fabian():
 
     # Test loading
     aria = Aria(
-        "data_files/Minerals/Olivine/z_orientation_(Fabian_et_al._2001)/olivine_Z_Fabian_2001.ri",
+        path="data_files/Minerals/Olivine/z_orientation_(Fabian_et_al._2001)/olivine_Z_Fabian_2001.ri",
         wavelength=False,
     )
-    print(fabian, aria.nk)
+    # print(fabian, aria.nk)
     plt.assert_frame_equal(fabian, aria.nk)
 
     # Test interpolation

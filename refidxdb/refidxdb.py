@@ -1,31 +1,22 @@
 from abc import ABC, abstractmethod
 from io import BytesIO
 from pathlib import Path
+from typing import Optional
 from urllib.request import urlopen
 from zipfile import ZipFile
 
 import numpy as np
 import polars as pl
+from pydantic import BaseModel, Field
 from tqdm import tqdm
 
 CHUNK_SIZE = 8192
 
 
-class RefIdxDB(ABC):
-    _data: pl.DataFrame | None
-    _nk: pl.DataFrame | None
-
-    def __init__(
-        self,
-        path: str | None = None,
-        wavelength: bool = True,
-        scale: float | None = None,
-    ):
-        self._path = path
-        self._wavelength = wavelength
-        self._scale = scale
-        self._data = None
-        self._nk = None
+class RefIdxDB(BaseModel, ABC):
+    path: Optional[str] = Field(default=None)
+    wavelength: bool = Field(default=True)
+    _scale: Optional[float]
 
     @property
     def cache_dir(self) -> str:
@@ -35,21 +26,21 @@ class RefIdxDB(ABC):
         """
         return str(Path.home()) + "/.cache/refidxdb/" + self.__class__.__name__
 
-    @property
-    def wavelength(self) -> bool:
-        """
-        Property that represents if the x-axis column represents
-        wavelengths (true) or wavenumbers (false).
-        """
-        return self._wavelength
+    # @property
+    # def wavelength(self) -> bool:
+    #     """
+    #     Property that represents if the x-axis column represents
+    #     wavelengths (true) or wavenumbers (false).
+    #     """
+    #     return self.wavelength
 
-    @wavelength.setter
-    def wavelength(self, value: bool) -> None:
-        """
-        Set the default value if the main column is of type
-        wavelength or wavenumber
-        """
-        self._wavelength = value
+    # @wavelength.setter
+    # def wavelength(self, value: bool) -> None:
+    #     """
+    #     Set the default value if the main column is of type
+    #     wavelength or wavenumber
+    #     """
+    #     self.wavelength = value
 
     @property
     @abstractmethod
@@ -60,22 +51,24 @@ class RefIdxDB(ABC):
         pass
 
     @property
+    @abstractmethod
     def scale(self) -> float:
         """
         A mandatory property that provides the default wavelength scale of the data.
         """
-        return (
-            self._scale
-            if (self._scale is not None)
-            else (1e-6 if self._wavelength else 1e2)
-        )
+        pass
+        # return (
+        #     self._scale
+        #     if (self._scale is not None)
+        #     else (1e-6 if self.wavelength else 1e2)
+        # )
 
-    @scale.setter
-    def scale(self, value: float) -> None:
-        """
-        Set the wavelength scale if it deviates from the default value.
-        """
-        self._scale = value
+    # @scale.setter
+    # def scale(self, value: float) -> None:
+    #     """
+    #     Set the wavelength scale if it deviates from the default value.
+    #     """
+    #     self._scale = value
 
     def download(self) -> None:
         """
@@ -122,16 +115,16 @@ class RefIdxDB(ABC):
     def interpolate(
         self,
         target,
-        scale: float | None = None,
+        scale: Optional[float] = None,
         complex: bool = False,
     ) -> pl.datatypes.DataType:
         if scale is None:
-            if self._wavelength:
+            if self.wavelength:
                 scale = 1e-6
             else:
                 scale = 1e2
 
-        print(scale)
+        # print(scale)
         interpolated = pl.DataFrame(
             dict(
                 {"w": target},

@@ -48,7 +48,6 @@ class RefIdxDB(BaseModel, ABC):
         """
         A mandatory property that provides the URL for downloading the database.
         """
-        pass
 
     @property
     @abstractmethod
@@ -56,7 +55,6 @@ class RefIdxDB(BaseModel, ABC):
         """
         A mandatory property that provides the default wavelength scale of the data.
         """
-        pass
         # return (
         #     self._scale
         #     if (self._scale is not None)
@@ -102,7 +100,6 @@ class RefIdxDB(BaseModel, ABC):
         """
         Get the raw data from the file provided by <path>.
         """
-        pass
 
     @property
     @abstractmethod
@@ -110,7 +107,6 @@ class RefIdxDB(BaseModel, ABC):
         """
         Refractive index values from the raw data
         """
-        pass
 
     def interpolate(
         self,

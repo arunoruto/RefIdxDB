@@ -26,7 +26,6 @@ def test_olivine_fabian():
         path="data_files/Minerals/Olivine/z_orientation_(Fabian_et_al._2001)/olivine_Z_Fabian_2001.ri",
         wavelength=False,
     )
-    # print(fabian, aria.nk)
     plt.assert_frame_equal(fabian, aria.nk)
 
     # Test interpolation
@@ -67,5 +66,4 @@ def test_olivine_fabian():
         url="https://eodg.atm.ox.ac.uk/ARIA/data_files/Minerals/Olivine/z_orientation_(Fabian_et_al._2001)/olivine_Z_Fabian_2001.ri",
         wavelength=False,
     )
-    # print(fabian, handler.nk)
     plt.assert_frame_equal(fabian, handler.nk)

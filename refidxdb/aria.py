@@ -46,7 +46,6 @@ class Aria(RefIdxDB):
 
         return pl.read_csv(
             data.encode(),
-            # new_columns=header["FORMAT"].split(" "),
             schema_overrides={h: pl.Float64 for h in header["FORMAT"].split(" ")},
             comment_prefix="#",
             separator=" ",

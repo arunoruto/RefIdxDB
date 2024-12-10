@@ -1,6 +1,7 @@
 from functools import cached_property
 from typing import Any
 
+import polars as pl
 from pydantic import BaseModel, Field, HttpUrl
 from rich.traceback import install
 
@@ -8,23 +9,25 @@ from refidxdb.aria import Aria
 from refidxdb.refidx import RefIdx
 from refidxdb.refidxdb import RefIdxDB
 
-install(show_locals=True)
+_ = install(show_locals=True)
 
 
 class Handler(BaseModel):
     url: HttpUrl
     wavelength: bool = Field(default=True)
-    _source: RefIdxDB
+    _source: RefIdxDB | None = None
 
     def model_post_init(self, __context: Any) -> None:
+        path = self.url.path
+        if path is None:
+            raise Exception("Path of url is not present")
         match self.url.host:
             case "refractiveindex.info":
                 self._source = RefIdx(
-                    path=self.url.path.strip("/"),
+                    path=path.strip("/"),
                     wavelength=self.wavelength,
                 )
             case "eodg.atm.ox.ac.uk":
-                path = self.url.path
                 if path.startswith("/ARIA/"):
                     path = path[6:]
                 self._source = Aria(
@@ -35,5 +38,5 @@ class Handler(BaseModel):
                 raise Exception(f"Unsupported source ${self.url.host}")
 
     @cached_property
-    def nk(self):
+    def nk(self) -> pl.DataFrame:
         return self._source.nk

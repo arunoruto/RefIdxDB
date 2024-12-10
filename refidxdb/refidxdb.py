@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from io import BytesIO
 from pathlib import Path
-from typing import Optional
 from urllib.request import urlopen
 from zipfile import ZipFile
 
 import numpy as np
+import numpy.typing as npt
 import polars as pl
 from pydantic import BaseModel, Field
 from tqdm import tqdm
@@ -14,9 +14,9 @@ CHUNK_SIZE = 8192
 
 
 class RefIdxDB(BaseModel, ABC):
-    path: Optional[str] = Field(default=None)
+    path: str | None = Field(default=None)
     wavelength: bool = Field(default=True)
-    # _scale: Optional[float]
+    # _scale: float | None = None
 
     @property
     def cache_dir(self) -> str:
@@ -25,22 +25,6 @@ class RefIdxDB(BaseModel, ABC):
         Defaults to $HOME/.cache/<__file__>.
         """
         return str(Path.home()) + "/.cache/refidxdb/" + self.__class__.__name__
-
-    # @property
-    # def wavelength(self) -> bool:
-    #     """
-    #     Property that represents if the x-axis column represents
-    #     wavelengths (true) or wavenumbers (false).
-    #     """
-    #     return self.wavelength
-
-    # @wavelength.setter
-    # def wavelength(self, value: bool) -> None:
-    #     """
-    #     Set the default value if the main column is of type
-    #     wavelength or wavenumber
-    #     """
-    #     self.wavelength = value
 
     @property
     @abstractmethod
@@ -55,28 +39,13 @@ class RefIdxDB(BaseModel, ABC):
         """
         A mandatory property that provides the default wavelength scale of the data.
         """
-        # return (
-        #     self._scale
-        #     if (self._scale is not None)
-        #     else (1e-6 if self.wavelength else 1e2)
-        # )
 
-    # @scale.setter
-    # def scale(self, value: float) -> None:
-    #     """
-    #     Set the wavelength scale if it deviates from the default value.
-    #     """
-    #     self._scale = value
-
-    def download(self) -> None:
+    def download(self, position: int | None = None) -> None:
         """
         Download the database from <url>
         and place it in <cache_dir>.
         """
         if self.url.split(".")[-1] == "zip":
-            # print(
-            #     f"Downloading the database for {self.__class__.__name__} from {self.url} to {self.cache_dir}"
-            # )
             response = urlopen(self.url)
             total_size = int(response.headers.get("content-length", 0))
             data = b""
@@ -85,6 +54,7 @@ class RefIdxDB(BaseModel, ABC):
                 unit="B",
                 unit_scale=True,
                 desc=self.__class__.__name__,
+                position=position,
             ) as progress:
                 while chunk := response.read(CHUNK_SIZE):
                     data += chunk
@@ -103,24 +73,26 @@ class RefIdxDB(BaseModel, ABC):
 
     @property
     @abstractmethod
-    def nk(self) -> pl.datatypes.DataType:
+    def nk(self) -> pl.DataFrame:
         """
         Refractive index values from the raw data
         """
 
     def interpolate(
         self,
-        target,
-        scale: Optional[float] = None,
+        target: npt.NDArray[np.float64],
+        scale: float | None = None,
         complex: bool = False,
-    ) -> pl.datatypes.DataType:
+    ) -> pl.DataFrame | npt.NDArray[np.complex128]:
+        """
+        Interpolate the refractive index values to the target array.
+        """
         if scale is None:
             if self.wavelength:
                 scale = 1e-6
             else:
                 scale = 1e2
 
-        # print(scale)
         interpolated = pl.DataFrame(
             dict(
                 {"w": target},
@@ -136,7 +108,8 @@ class RefIdxDB(BaseModel, ABC):
                 },
             )
         )
+
         if complex:
-            return interpolated["n"] + 1j * interpolated["k"]
-        else:
-            return interpolated
+            return interpolated["n"].to_numpy() + 1j * interpolated["k"].to_numpy()
+
+        return interpolated

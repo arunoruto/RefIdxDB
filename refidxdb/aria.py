@@ -1,6 +1,5 @@
 import re
 from functools import cached_property
-from typing import Optional
 
 import polars as pl
 
@@ -8,7 +7,7 @@ from .refidxdb import RefIdxDB
 
 
 class Aria(RefIdxDB):
-    _x_type: Optional[str] = "wavelength"
+    _x_type: str = "wavelength"
 
     @property
     def url(self) -> str:

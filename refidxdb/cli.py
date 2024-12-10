@@ -1,5 +1,6 @@
 # Guide: https://medium.com/clarityai-engineering/how-to-create-and-distribute-a-minimalist-cli-tool-with-python-poetry-click-and-pipx-c0580af4c026
 import sys
+from multiprocessing import Pool, current_process
 from pathlib import Path
 
 import click
@@ -7,6 +8,7 @@ import plotext as plt
 import polars as pl
 from streamlit import runtime
 from streamlit.web import cli as stcli
+from tqdm import tqdm
 
 from refidxdb import databases
 from refidxdb.aria import Aria
@@ -39,6 +41,12 @@ def db(download, clean) -> None:
         raise Exception("Cleaning is not yet implemented.")
 
 
+def _download(Src):
+    worker_id = current_process()._identity[0]
+    db = Src()
+    db.download(position=worker_id)
+
+
 def download_db(dbs: str):
     if dbs == "all":
         download_list = list(databases.values())
@@ -46,9 +54,14 @@ def download_db(dbs: str):
         db_list = [item.lower() for item in dbs.split(",")]
         download_list = [databases[item] for item in db_list]
 
-    for Source in download_list:
-        db = Source()
-        db.download()
+    with Pool(processes=2) as pool:
+        for _ in tqdm(
+            pool.imap(_download, download_list),
+            total=len(download_list),
+            desc="TOTAL",
+            position=0,
+        ):
+            pass
 
     click.echo("All databases downlaoded!")
     click.echo("Bye :)")

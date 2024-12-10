@@ -1,6 +1,6 @@
 # Guide: https://medium.com/clarityai-engineering/how-to-create-and-distribute-a-minimalist-cli-tool-with-python-poetry-click-and-pipx-c0580af4c026
 import sys
-from multiprocessing import Pool, current_process
+from multiprocessing import current_process, get_context
 from pathlib import Path
 
 import click
@@ -54,7 +54,11 @@ def download_db(dbs: str):
         db_list = [item.lower() for item in dbs.split(",")]
         download_list = [databases[item] for item in db_list]
 
-    with Pool(processes=2) as pool:
+    # Use with 3.14: with Pool(processes=2) as pool:
+    # Polars can get deadlock if fork() is used
+    # Using spawn() fixes this for now
+    # Should be fixed in 3.14
+    with get_context("spawn").Pool(processes=2) as pool:
         for _ in tqdm(
             pool.imap(_download, download_list),
             total=len(download_list),

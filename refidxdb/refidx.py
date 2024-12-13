@@ -79,10 +79,13 @@ class RefIdx(RefIdxDB):
                 case _:
                     raise Exception(f"Unsupported data type: {data['type']}")
 
+        # TODO: split table data from formulas
+        # Use tables for interpolation and formulas for explicit calculation
         return (
             pl.concat([nk, *storage], how="vertical")
             .with_columns(pl.col("w").mul(self.scale))
             .sort("w")
+            .interpolate()
         )
 
 

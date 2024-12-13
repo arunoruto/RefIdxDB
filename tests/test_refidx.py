@@ -27,7 +27,7 @@ def test_iron_querry():
 
     # Test loading
     refidx = RefIdx(path="database/data-nk/main/Fe/Querry.yml")
-    plt.assert_frame_equal(data, refidx.nk)
+    plt.assert_frame_equal(data, refidx.nk.drop("n_is_not_null"))
 
     # Test interpolation
     groundtrouth = pl.DataFrame(
@@ -57,7 +57,7 @@ def test_iron_querry():
             Any, "https://refractiveindex.info/database/data-nk/main/Fe/Querry.yml"
         )
     )
-    plt.assert_frame_equal(data, handler.nk)
+    plt.assert_frame_equal(data, handler.nk.drop("n_is_not_null"))
 
 
 # express from https://refractiveindex.info/tmp/database/data-nk/other/semiconductor%20alloys/AlAs-GaAs/Perner-0.html
@@ -69,7 +69,8 @@ def test_algaas_perner0():
         path="database/data-nk/other/semiconductor alloys/AlAs-GaAs/Perner-0.yml"
     )
     wn = (
-        wn.nk.filter(pl.col("n").is_not_null())
+        # wn.nk.filter(pl.col("n").is_not_null())
+        wn.nk.filter(pl.col("n_is_not_null"))
         .drop("k")
         .with_columns(pl.col("w").mul(1e6))
     )
@@ -90,7 +91,8 @@ def test_ohara_sbal2():
 
     wn = RefIdx(path="database/data-nk/glass/ohara/S-BAL2.yml")
     wn = (
-        wn.nk.filter(pl.col("n").is_not_null())
+        # wn.nk.filter(pl.col("n").is_not_null())
+        wn.nk.filter(pl.col("n_is_not_null"))
         .drop("k")
         .with_columns(pl.col("w").mul(1e6))
     )
@@ -113,7 +115,8 @@ def test_ohara_bal2():
 
     wn = RefIdx(path="database/data-nk/glass/ohara/BAL2.yml")
     wn = (
-        wn.nk.filter(pl.col("n").is_not_null())
+        # wn.nk.filter(pl.col("n").is_not_null())
+        wn.nk.filter(pl.col("n_is_not_null"))
         .drop("k")
         .with_columns(pl.col("w").mul(1e6))
     )

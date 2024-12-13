@@ -1,6 +1,8 @@
 from functools import cached_property
 from typing import Any
 
+import numpy as np
+import numpy.typing as npt
 import polars as pl
 from pydantic import BaseModel, Field, HttpUrl, PrivateAttr
 from rich.traceback import install
@@ -37,6 +39,23 @@ class Handler(BaseModel):
             case _:
                 raise Exception(f"Unsupported source ${self.url.host}")
 
+    # TODO: implemented for debuging, remove when not needed anymore
+    @property
+    def source(self) -> RefIdxDB | None:
+        return self._source
+
     @cached_property
     def nk(self) -> pl.DataFrame:
+        if self._source is None:
+            raise Exception("Source is not initialized")
         return self._source.nk
+
+    def interpolate(
+        self,
+        target: npt.NDArray[np.float64],
+        scale: float | None = None,
+        complex: bool = False,
+    ) -> pl.DataFrame | npt.NDArray[np.complex128]:
+        if self._source is None:
+            raise Exception("Source is not initialized")
+        return self._source.interpolate(target=target, scale=scale, complex=complex)

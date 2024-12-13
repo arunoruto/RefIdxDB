@@ -1,6 +1,6 @@
 [project]
 name = "refidxdb"
-version = "0.0.7"
+version = "0.0.8"
 description = "Python interface for various refractive index databases"
 readme = "README.md"
 authors = [{ name = "Mirza Arnaut", email = "mirza.arnaut45@gmail.com" }]

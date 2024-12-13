@@ -2,7 +2,7 @@ from functools import cached_property
 from typing import Any
 
 import polars as pl
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, PrivateAttr
 from rich.traceback import install
 
 from refidxdb.aria import Aria
@@ -15,7 +15,7 @@ _ = install(show_locals=True)
 class Handler(BaseModel):
     url: HttpUrl
     wavelength: bool = Field(default=True)
-    _source: RefIdxDB | None = None
+    _source: RefIdxDB | None = PrivateAttr(default=None)
 
     def model_post_init(self, __context: Any) -> None:
         path = self.url.path

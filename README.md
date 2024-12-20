@@ -131,3 +131,8 @@ Nevertheless, there are projects that have tried to achieve the same for a singl
 - [PyTMM](https://github.com/kitchenknif/PyTMM) - the API is implemented in
   [refractiveindex.py](https://github.com/kitchenknif/PyTMM/blob/master/PyTMM/refractiveIndex.py)
 - [PyOptik](https://github.com/MartinPdeS/PyOptik)
+
+## TODO
+
+- Aria has sometimes spaces or URL encoded characters.
+  Those need to be decoded using `urllib.parse.unquote`.

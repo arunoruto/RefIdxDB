@@ -136,3 +136,4 @@ Nevertheless, there are projects that have tried to achieve the same for a singl
 
 - Aria has sometimes spaces or URL encoded characters.
   Those need to be decoded using `urllib.parse.unquote`.
+- Fix for `refidx`: `data-nk/other/commercial polymers/CR-39/mono.yml`

@@ -1,5 +1,6 @@
 from functools import cached_property
 from typing import Any
+from urllib.parse import unquote
 
 import numpy as np
 import numpy.typing as npt
@@ -20,9 +21,11 @@ class Handler(BaseModel):
     _source: RefIdxDB | None = PrivateAttr(default=None)
 
     def model_post_init(self, __context: Any) -> None:
-        path = self.url.path
-        if path is None:
+        if self.url.path is None:
             raise Exception("Path of url is not present")
+        path = unquote(self.url.path)
+        # if path is None:
+        #     raise Exception("Path of url is not present")
         match self.url.host:
             case "refractiveindex.info":
                 self._source = RefIdx(

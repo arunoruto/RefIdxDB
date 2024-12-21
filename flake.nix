@@ -126,7 +126,15 @@
 
                 editablePythonSet = pythonSet.overrideScope editableOverlay;
 
-                virtualenv = editablePythonSet.mkVirtualEnv "refidxdb-dev-env" workspace.deps.default;
+                virtualenv = editablePythonSet.mkVirtualEnv "refidxdb-dev-env" (
+                  workspace.deps.default
+                  // {
+                    refidxdb = [
+                      # "explore"
+                      "test"
+                    ];
+                  }
+                );
 
               in
               pkgs.mkShell {

@@ -18,6 +18,7 @@ def test_iron_querry():
     data = (
         pl.read_csv(
             StringIO(querry["DATA"][0]["data"]),
+            has_header=False,
             new_columns=["w", "n", "k"],
             separator=" ",
         )

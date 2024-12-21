@@ -48,6 +48,7 @@ class RefIdx(RefIdxDB):
                     storage.append(
                         pl.read_csv(
                             StringIO(data["data"]),
+                            has_header=False,
                             new_columns=["w", "n", "k"],
                             separator=" ",
                         )
@@ -56,6 +57,7 @@ class RefIdx(RefIdxDB):
                     storage.append(
                         pl.read_csv(
                             StringIO(data["data"]),
+                            has_header=False,
                             new_columns=["w", "n"],
                             separator=" ",
                         ).with_columns(k=pl.lit(None))
@@ -64,6 +66,7 @@ class RefIdx(RefIdxDB):
                     storage.append(
                         pl.read_csv(
                             StringIO(data["data"]),
+                            has_header=False,
                             new_columns=["w", "k"],
                             separator=" ",
                         )

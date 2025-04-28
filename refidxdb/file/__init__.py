@@ -1,6 +1,7 @@
 from io import StringIO
 
 from pydantic import ConfigDict, Field
+
 from refidxdb.refidxdb import RefIdxDB
 
 CHUNK_SIZE = 8192

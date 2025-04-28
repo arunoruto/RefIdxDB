@@ -1,37 +1,17 @@
+import logging
 from abc import ABC, abstractmethod
-from io import BytesIO
-from pathlib import Path
-from urllib.request import urlopen
-from zipfile import ZipFile
 
 import numpy as np
 import numpy.typing as npt
 import polars as pl
-from pydantic import BaseModel, Field
-from tqdm import tqdm
+from pydantic import BaseModel, Field, PrivateAttr
 
 CHUNK_SIZE = 8192
 
 
 class RefIdxDB(BaseModel, ABC):
-    path: str | None = Field(default=None)
     wavelength: bool = Field(default=True)
-    # _scale: float | None = None
-
-    @property
-    def cache_dir(self) -> str:
-        """
-        The directory where the cached data will.
-        Defaults to $HOME/.cache/<__file__>.
-        """
-        return str(Path.home()) + "/.cache/refidxdb/" + self.__class__.__name__
-
-    @property
-    @abstractmethod
-    def url(self) -> str:
-        """
-        A mandatory property that provides the URL for downloading the database.
-        """
+    _logger: logging.Logger = PrivateAttr(default=logging.getLogger(__name__))
 
     @property
     @abstractmethod
@@ -39,30 +19,6 @@ class RefIdxDB(BaseModel, ABC):
         """
         A mandatory property that provides the default wavelength scale of the data.
         """
-
-    def download(self, position: int | None = None) -> None:
-        """
-        Download the database from <url>
-        and place it in <cache_dir>.
-        """
-        if self.url.split(".")[-1] == "zip":
-            response = urlopen(self.url)
-            total_size = int(response.headers.get("content-length", 0))
-            data = b""
-            with tqdm(
-                total=total_size,
-                unit="B",
-                unit_scale=True,
-                desc=self.__class__.__name__,
-                position=position,
-            ) as progress:
-                while chunk := response.read(CHUNK_SIZE):
-                    data += chunk
-                    progress.update(len(chunk))
-            file = ZipFile(BytesIO(data))
-            file.extractall(path=self.cache_dir)
-        else:
-            raise Exception("Extension not supported for being downloaded")
 
     @property
     @abstractmethod

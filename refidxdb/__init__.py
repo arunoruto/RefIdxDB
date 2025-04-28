@@ -1,12 +1,20 @@
-from refidxdb.aria import Aria
-from refidxdb.handler import Handler
-from refidxdb.refidx import RefIdx
-from refidxdb.refidxdb import RefIdxDB
+# from refidxdb.file.dat import DAT
+# from refidxdb.handler import Handler
+# from refidxdb.refidxdb import RefIdxDB
+# from refidxdb.url.aria import Aria
+# from refidxdb.url.refidx import RefIdx
 
-databases = {
-    item.__name__.lower(): item
-    for item in [
-        Aria,
-        RefIdx,
-    ]
-}
+# databases = {
+#     item.__name__.lower(): item
+#     for item in [
+#         Aria,
+#         RefIdx,
+#     ]
+# }
+
+# files = {
+#     item.__name__.lower(): item
+#     for item in [
+#         DAT,
+#     ]
+# }

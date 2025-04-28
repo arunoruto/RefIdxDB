@@ -1,4 +1,5 @@
 # Guide: https://medium.com/clarityai-engineering/how-to-create-and-distribute-a-minimalist-cli-tool-with-python-poetry-click-and-pipx-c0580af4c026
+import logging
 import sys
 from multiprocessing import current_process, get_context
 from pathlib import Path
@@ -10,10 +11,17 @@ from streamlit import runtime
 from streamlit.web import cli as stcli
 from tqdm import tqdm
 
-from refidxdb import databases
-from refidxdb.aria import Aria
-from refidxdb.refidx import RefIdx
 from refidxdb.refidxdb import RefIdxDB
+from refidxdb.url.aria import Aria
+from refidxdb.url.refidx import RefIdx
+
+databases = {
+    item.__name__.lower(): item
+    for item in [
+        Aria,
+        RefIdx,
+    ]
+}
 
 
 @click.group()
@@ -128,7 +136,35 @@ def parse_source(db, data) -> RefIdxDB:  # pragma: no cover
 
 @cli.command(help="""Explore data using Streamlit""")
 def explore():  # pragma: no cover
+    # if not runtime.exists():
+    #     print(Path(__file__).parent)
+    #     sys.argv = ["streamlit", "run", f"{Path(__file__).parent}/app.py"]
+    #     sys.exit(stcli.main())
+
+    # logger = create_logger(logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    try:
+        from streamlit import runtime
+        from streamlit.web import cli as stcli
+    except ImportError:
+        logger.info(
+            "Error: Streamlit is not installed. Please install it: pip install streamlit"
+        )
+        sys.exit(1)
+
     if not runtime.exists():
-        print(Path(__file__).parent)
-        sys.argv = ["streamlit", "run", f"{Path(__file__).parent}/app.py"]
+        # app_path = Path(__file__).parent / "pyfracval" / "app.py"
+        app_path = Path(__file__).parent / "app.py"
+        if not app_path.exists():
+            print(f"Error: Streamlit app not found at expected location: {app_path}")
+            print("Please ensure app.py exists within the pyfracval directory.")
+            sys.exit(1)
+
+        print(f"Launching Streamlit app: {app_path}")
+        sys.argv = ["streamlit", "run", str(app_path)]
         sys.exit(stcli.main())
+    else:
+        print(
+            "Streamlit runtime already exists (maybe running from within Streamlit?)."
+        )

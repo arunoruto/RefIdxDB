@@ -8,9 +8,9 @@ import polars as pl
 from pydantic import BaseModel, Field, HttpUrl, PrivateAttr
 from rich.traceback import install
 
-from refidxdb.aria import Aria
-from refidxdb.refidx import RefIdx
 from refidxdb.refidxdb import RefIdxDB
+from refidxdb.url.aria import Aria
+from refidxdb.url.refidx import RefIdx
 
 _ = install(show_locals=True)
 

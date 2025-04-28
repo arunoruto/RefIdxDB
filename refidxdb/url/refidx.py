@@ -6,10 +6,10 @@ import numpy.typing as npt
 import polars as pl
 import yaml
 
-from .refidxdb import RefIdxDB
+from . import URL
 
 
-class RefIdx(RefIdxDB):
+class RefIdx(URL):
     """
     Handler for the refractiveindex.info database.
     Polyanskiy, M.N. Refractiveindex.info database of optical constants. Sci Data 11, 94 (2024).

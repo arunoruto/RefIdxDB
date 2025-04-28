@@ -3,10 +3,10 @@ from functools import cached_property
 
 import polars as pl
 
-from .refidxdb import RefIdxDB
+from . import URL
 
 
-class Aria(RefIdxDB):
+class Aria(URL):
     _x_type: str = "wavelength"
 
     @property

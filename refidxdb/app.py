@@ -1,29 +1,83 @@
 import re
+from io import StringIO
 from pathlib import Path
+from shutil import copy
 
 import numpy as np
 import plotly.graph_objects as go
 import polars as pl
 import streamlit as st
 
-from refidxdb import databases
+from refidxdb.file.dat import DAT
+from refidxdb.url.aria import Aria
+from refidxdb.url.refidx import RefIdx
+
+# from refidxdb import databases, files
+
+# try:
+#     from refidxdb import databases
+# except ImportError:
+#     # If running outside of the refidxdb directory, add it to the path
+#     import sys
+
+#     root = Path(__file__).parent.absolute().as_posix()
+#     print(root)
+#     print(type(root))
+#     sys.path.append(root)
+#     from . import databases
+
+databases = {
+    item.__name__.lower(): item
+    for item in [
+        Aria,
+        RefIdx,
+    ]
+}
+
+files = {
+    item.__name__.lower(): item
+    for item in [
+        DAT,
+    ]
+}
 
 st.set_page_config(layout="wide")
 st.title("RefIdxDB")
 
 db = st.radio(
     "Database",
-    list(databases.keys()),
+    list(databases.keys()) + ["Upload"],
 )
-cache_dir = databases[db]().cache_dir
-files = [str(item) for item in Path(cache_dir).rglob("*") if item.is_file()]
-if db == "refidx":
-    files = [item for item in files if re.search(r"/data-nk", item)]
-file = st.selectbox(
-    "File",
-    files,
-    format_func=lambda x: "/".join(x.replace(cache_dir, "").split("/")[2:]),
-)
+st.write(databases)
+if db == "Upload":
+    file = st.file_uploader(
+        "Upload file",
+        type=["csv", "txt", "ri", "dat"],
+        label_visibility="collapsed",
+    )
+    if file is None:
+        st.stop()
+    name = file.name
+    content = file.getvalue().decode("utf-8")
+    file = StringIO(content)
+    match name.split(".")[-1]:
+        case "dat" | "ri":
+            db_class = files["dat"]
+            st.write(np.loadtxt(StringIO(content)))
+            st.write(file)
+        case _:
+            st.write(file)
+else:
+    cache_dir = databases[db]().cache_dir
+    files = [str(item) for item in Path(cache_dir).rglob("*") if item.is_file()]
+    if db == "refidx":
+        files = [item for item in files if re.search(r"/data-nk", item)]
+    file = st.selectbox(
+        "File",
+        files,
+        format_func=lambda x: "/".join(x.replace(cache_dir, "").split("/")[2:]),
+    )
+    db_class = databases[db]
 
 wavelength = st.toggle("Wavenumber / Wavelength", True)
 logx = st.checkbox("Log x-axis", False)
@@ -36,7 +90,7 @@ scale = 1e-6 if wavelength else 1e2
 name = {True: "Wavelength", False: "Wavenumber"}
 suffix = {True: "μm", False: "cm⁻¹"}
 
-data = databases[db](path=file, wavelength=wavelength)
+data = db_class(path=file, wavelength=wavelength)
 nk = data.nk.with_columns(pl.col("w").truediv(scale))
 
 fig = go.Figure()
@@ -77,5 +131,5 @@ fig.update_layout(
     # ),
 )
 fig.update_traces(connectgaps=True)
-st.plotly_chart(fig, use_container_width=True)
-st.table(nk.select(pl.all().cast(pl.Utf8)))
+# st.plotly_chart(fig, use_container_width=True)
+# st.table(nk.select(pl.all().cast(pl.Utf8)))

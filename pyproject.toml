@@ -1,6 +1,6 @@
 [project]
 name = "refidxdb"
-version = "0.0.9"
+version = "0.1.0"
 description = "Python interface for various refractive index databases"
 readme = "README.md"
 authors = [{ name = "Mirza Arnaut", email = "mirza.arnaut45@gmail.com" }]
@@ -43,3 +43,10 @@ testpaths = ["tests"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[semantic_release]
+version_variable = ["refidxdb/__init__.py:__version__"]
+version_toml = ["definition.toml:project.version:nf"]
+major_on_zero = false
+branch = "main"
+build_command = "uv build --no-sources"

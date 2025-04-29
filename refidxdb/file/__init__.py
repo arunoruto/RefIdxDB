@@ -5,6 +5,7 @@ from typing import Literal
 
 import polars as pl
 from pydantic import ConfigDict, Field
+
 from refidxdb.refidxdb import RefIdxDB
 
 CHUNK_SIZE = 8192

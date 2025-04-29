@@ -11,7 +11,10 @@ CHUNK_SIZE = 8192
 
 class RefIdxDB(BaseModel, ABC):
     wavelength: bool = Field(default=True)
-    _logger: logging.Logger = PrivateAttr(default=logging.getLogger(__name__))
+    _logger: logging.Logger = PrivateAttr(default=logging.getLogger(f"Base.{__name__}"))
+
+    def model_post_init(self, __context):
+        self._logger = logging.getLogger(f"{self.__class__.__name__}")
 
     @property
     @abstractmethod

@@ -5,8 +5,9 @@ from urllib.request import urlopen
 from zipfile import ZipFile
 
 from pydantic import Field
-from refidxdb.refidxdb import RefIdxDB
 from tqdm import tqdm
+
+from refidxdb.refidxdb import RefIdxDB
 
 CHUNK_SIZE = 8192
 

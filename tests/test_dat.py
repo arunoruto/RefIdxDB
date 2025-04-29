@@ -10,17 +10,26 @@ from refidxdb.handler import Handler
 def test_olivine_fabian_dat():
     file = Path(__file__).parent / "data/olivine_Z_Fabian_2001.ri"
     fabian = (
-        pl.read_csv(
-            file,
-            has_header=False,
-            schema_overrides={"WAVN": pl.Float64, "N": pl.Float64, "K": pl.Float64},
-            comment_prefix="#",
-            separator="\t",
+        pl.DataFrame(
+            np.loadtxt(file, encoding="latin-1"),
+            schema={"WAVN": pl.Float64, "N": pl.Float64, "K": pl.Float64},
         )
         .with_columns(pl.col("WAVN").mul(1e2))
         .sort("WAVN")
     )
     fabian.columns = ["w", "n", "k"]
+    # fabian = (
+    #     pl.read_csv(
+    #         file,
+    #         has_header=False,
+    #         schema_overrides={"WAVN": pl.Float64, "N": pl.Float64, "K": pl.Float64},
+    #         comment_prefix="#",
+    #         separator="\t",
+    #     )
+    #     .with_columns(pl.col("WAVN").mul(1e2))
+    #     .sort("WAVN")
+    # )
+    # fabian.columns = ["w", "n", "k"]
 
     # Test loading
     aria = DAT(
@@ -28,7 +37,6 @@ def test_olivine_fabian_dat():
         wavelength=False,
         w_column="wn",
     )
-    print(fabian, aria.nk)
     plt.assert_frame_equal(fabian, aria.nk)
 
     # Test interpolation
@@ -69,5 +77,4 @@ def test_olivine_fabian_dat():
         url="https://eodg.atm.ox.ac.uk/ARIA/data_files/Minerals/Olivine/z_orientation_(Fabian_et_al._2001)/olivine_Z_Fabian_2001.ri",
         wavelength=False,
     )
-    print(fabian, handler.nk)
     plt.assert_frame_equal(fabian, handler.nk)

@@ -3,6 +3,7 @@ from functools import cached_property
 import numpy as np
 import polars as pl
 from pydantic import ConfigDict
+
 from refidxdb.file import File
 
 

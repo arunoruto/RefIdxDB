@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Literal
 
 from pydantic import ConfigDict, Field
+
 from refidxdb.refidxdb import RefIdxDB
 
 CHUNK_SIZE = 8192

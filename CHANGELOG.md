@@ -1,6 +1,24 @@
 # CHANGELOG
 
 
+## v0.1.1 (2025-04-29)
+
+### Bug Fixes
+
+- Trigger new release
+  ([`fc885fd`](https://github.com/arunoruto/RefIdxDB/commit/fc885fd3de91261a0c2304930944fa26b6790cfe))
+
+### Continuous Integration
+
+- Comment out build step
+  ([`560d7a0`](https://github.com/arunoruto/RefIdxDB/commit/560d7a0b3b50b9f9cde4aead3b6cf03cd7ceb877))
+
+This should have been done in the previous step
+
+- Split coverage report into separate workflow
+  ([`a78712e`](https://github.com/arunoruto/RefIdxDB/commit/a78712e78aca574e5b6fd695b28e3ac80646f117))
+
+
 ## v0.1.0 (2025-04-29)
 
 ### Bug Fixes

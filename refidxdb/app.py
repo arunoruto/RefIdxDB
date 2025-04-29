@@ -15,7 +15,9 @@ from refidxdb.url.refidx import RefIdx
 # from refidxdb import databases, files
 
 # try:
-#     from refidxdb import databases
+#     from refidxdb.file.dat import DAT
+#     from refidxdb.url.aria import Aria
+#     from refidxdb.url.refidx import RefIdx
 # except ImportError:
 #     # If running outside of the refidxdb directory, add it to the path
 #     import sys
@@ -24,7 +26,9 @@ from refidxdb.url.refidx import RefIdx
 #     print(root)
 #     print(type(root))
 #     sys.path.append(root)
-#     from . import databases
+#     from .file.dat import DAT
+#     from .url.aria import Aria
+#     from .url.refidx import RefIdx
 
 databases = {
     item.__name__.lower(): item
@@ -44,16 +48,30 @@ files = {
 st.set_page_config(layout="wide")
 st.title("RefIdxDB")
 
+
+# def load_new_file():
+#     with st.spinner("Please wait.. loading the file"):
+#         new_file = st.session_state["uploaded_file"]
+#         bytes_data = new_file.read()
+#         print(bytes_data)
+#         # upload_file_to_blob(STORAGE_CONNECTION_STRING, STORAGE_CONTAINER_NAME, "app_data/"+new_file.name, bytes_data)
+#         # st.session_state.document_url = get_blob_sas_url(STORAGE_CONNECTION_STRING, STORAGE_CONTAINER_NAME, "app_data/"+new_file.name)
+#     return
+
+
 db = st.radio(
     "Database",
     list(databases.keys()) + ["Upload"],
 )
-st.write(databases)
+
 if db == "Upload":
     file = st.file_uploader(
         "Upload file",
         type=["csv", "txt", "ri", "dat"],
         label_visibility="collapsed",
+        accept_multiple_files=False,
+        key="uploaded_file",
+        # on_change=load_new_file,
     )
     if file is None:
         st.stop()
@@ -63,8 +81,7 @@ if db == "Upload":
     match name.split(".")[-1]:
         case "dat" | "ri":
             db_class = files["dat"]
-            st.write(np.loadtxt(StringIO(content)))
-            st.write(file)
+            # st.write(np.loadtxt(StringIO(content)))
         case _:
             st.write(file)
 else:
@@ -106,7 +123,6 @@ fig.add_trace(
         x=nk["w"],
         y=nk["k"],
         name="k",
-        # xaxis="x2",
     )
 )
 fig.update_layout(
@@ -131,5 +147,5 @@ fig.update_layout(
     # ),
 )
 fig.update_traces(connectgaps=True)
-# st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 # st.table(nk.select(pl.all().cast(pl.Utf8)))

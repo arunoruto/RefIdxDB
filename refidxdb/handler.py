@@ -8,6 +8,7 @@ import polars as pl
 from pydantic import BaseModel, Field, HttpUrl, PrivateAttr
 from rich.traceback import install
 
+from refidxdb.file.dat import DAT
 from refidxdb.refidxdb import RefIdxDB
 from refidxdb.url.aria import Aria
 from refidxdb.url.refidx import RefIdx
@@ -16,31 +17,56 @@ _ = install(show_locals=True)
 
 
 class Handler(BaseModel):
-    url: HttpUrl
+    path: str | None = Field(
+        default=None,
+        description="Path to the refractive index file. Supported formats: CSV, DAT ",
+    )
+    url: HttpUrl | None = Field(
+        default=None,
+        description="URL of the refractive index data source. Supported sources: refractiveindex.info, eodg.atm.ox.ac.uk",
+    )
     wavelength: bool = Field(default=True)
     _source: RefIdxDB | None = PrivateAttr(default=None)
 
     def model_post_init(self, __context: Any) -> None:
-        if self.url.path is None:
-            raise Exception("Path of url is not present")
-        path = unquote(self.url.path)
-        # if path is None:
-        #     raise Exception("Path of url is not present")
-        match self.url.host:
-            case "refractiveindex.info":
-                self._source = RefIdx(
-                    path=path.strip("/"),
-                    wavelength=self.wavelength,
-                )
-            case "eodg.atm.ox.ac.uk":
-                if path.startswith("/ARIA/"):
-                    path = path[6:]
-                self._source = Aria(
-                    path=path,
-                    wavelength=self.wavelength,
-                )
-            case _:
-                raise Exception(f"Unsupported source ${self.url.host}")
+        if self.url is not None:
+            if self.url.path is None:
+                raise Exception("Path of url is not present")
+            path = unquote(self.url.path)
+            # if path is None:
+            #     raise Exception("Path of url is not present")
+            match self.url.host:
+                case "refractiveindex.info":
+                    self._source = RefIdx(
+                        path=path.strip("/"),
+                        wavelength=self.wavelength,
+                    )
+                case "eodg.atm.ox.ac.uk":
+                    if path.startswith("/ARIA/"):
+                        path = path[6:]
+                    self._source = Aria(
+                        path=path,
+                        wavelength=self.wavelength,
+                    )
+                case _:
+                    raise Exception(f"Unsupported source ${self.url.host}")
+        elif self.path is not None:
+            match self.path.split(".")[-1].lower():
+                case "csv":
+                    # self._source = RefIdx(
+                    #     path=self.path,
+                    #     wavelength=self.wavelength,
+                    # )
+                    raise NotImplementedError("CSV file support is not implemented yet")
+                case "dat":
+                    self._source = DAT(
+                        path=self.path,
+                        wavelength=self.wavelength,
+                    )
+                case _:
+                    raise Exception(f"Unsupported file type {self.path.split('.')[-1]}")
+        else:
+            raise Exception("Either path or url should be provided")
 
     # TODO: implemented for debuging, remove when not needed anymore
     @property

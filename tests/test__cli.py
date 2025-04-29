@@ -2,6 +2,7 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
+
 from refidxdb.cli import cli
 from refidxdb.url.aria import Aria
 from refidxdb.url.refidx import RefIdx

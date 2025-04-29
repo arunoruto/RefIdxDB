@@ -1,13 +1,12 @@
 import re
 from io import StringIO
 from pathlib import Path
-from shutil import copy
 
-import numpy as np
 import plotly.graph_objects as go
 import polars as pl
 import streamlit as st
 
+from refidxdb.file.csv import CSV
 from refidxdb.file.dat import DAT
 from refidxdb.url.aria import Aria
 from refidxdb.url.refidx import RefIdx
@@ -38,25 +37,8 @@ databases = {
     ]
 }
 
-files = {
-    item.__name__.lower(): item
-    for item in [
-        DAT,
-    ]
-}
-
 st.set_page_config(layout="wide")
 st.title("RefIdxDB")
-
-
-# def load_new_file():
-#     with st.spinner("Please wait.. loading the file"):
-#         new_file = st.session_state["uploaded_file"]
-#         bytes_data = new_file.read()
-#         print(bytes_data)
-#         # upload_file_to_blob(STORAGE_CONNECTION_STRING, STORAGE_CONTAINER_NAME, "app_data/"+new_file.name, bytes_data)
-#         # st.session_state.document_url = get_blob_sas_url(STORAGE_CONNECTION_STRING, STORAGE_CONTAINER_NAME, "app_data/"+new_file.name)
-#     return
 
 
 db = st.radio(
@@ -65,7 +47,8 @@ db = st.radio(
 )
 
 if db == "Upload":
-    file = st.file_uploader(
+    col1, col2 = st.columns([1, 3])
+    file = col1.file_uploader(
         "Upload file",
         type=["csv", "txt", "ri", "dat"],
         label_visibility="collapsed",
@@ -73,15 +56,34 @@ if db == "Upload":
         key="uploaded_file",
         # on_change=load_new_file,
     )
+    wavelength_file = col2.toggle("File: Wavenumber / Wavelength", True)
+    scale_file = col2.number_input(
+        "Exponent",
+        value=-6 if wavelength_file else 2,
+        format="%d",
+        step=1,
+        help="Scale for wavenumber to wavelength conversion. Default is 1e-2.",
+    )
+    scale_file = 10**scale_file
+    col2.write(f"Sale: {scale_file:.0e}")
+
     if file is None:
         st.stop()
     name = file.name
-    content = file.getvalue().decode("utf-8")
+    try:
+        content = file.getvalue().decode("utf-8")
+    except UnicodeError:
+        print("Error decoding file content")
+        print("Trying latin-1")
+        content = file.getvalue().decode("latin-1")
     file = StringIO(content)
     match name.split(".")[-1]:
         case "dat" | "ri":
-            db_class = files["dat"]
+            db_class = DAT
             # st.write(np.loadtxt(StringIO(content)))
+        case "csv":
+            db_class = CSV
+            # st.write(pl.read_csv(StringIO(content)))
         case _:
             st.write(file)
 else:
@@ -96,19 +98,27 @@ else:
     )
     db_class = databases[db]
 
-wavelength = st.toggle("Wavenumber / Wavelength", True)
+wavelength = st.toggle("Plot: Wavenumber / Wavelength", True)
 logx = st.checkbox("Log x-axis", False)
 logy = st.checkbox("Log y-axis", False)
 
 with st.expander("Full file path"):
     st.write(file)
 
+if db == "Upload":
+    data = db_class(
+        path=file,
+        wavelength=wavelength,
+        w_column="wl" if wavelength_file else "wn",
+        scale=scale_file,
+    )
+    # nk = data.nk.clone()
+else:
+    data = db_class(path=file, wavelength=wavelength)
 scale = 1e-6 if wavelength else 1e2
-name = {True: "Wavelength", False: "Wavenumber"}
-suffix = {True: "μm", False: "cm⁻¹"}
-
-data = db_class(path=file, wavelength=wavelength)
-nk = data.nk.with_columns(pl.col("w").truediv(scale))
+nk = data.nk.clone().with_columns(pl.col("w").truediv(scale))
+# nk = data.nk.clone()
+# nk = data.nk.with_columns(pl.col("w").truediv(data.scale))
 
 fig = go.Figure()
 fig.add_trace(
@@ -127,9 +137,9 @@ fig.add_trace(
 )
 fig.update_layout(
     xaxis=dict(
-        title=f"{name[wavelength]} in {suffix[wavelength]}",
+        title="Wavelength in μm" if wavelength else "Wavenumber in cm⁻¹",
         type="log" if logx else "linear",
-        ticksuffix=suffix[wavelength],
+        # ticksuffix=" (m)" if wavelength else " (m⁻¹)",
     ),
     yaxis=dict(
         title="Values",
@@ -148,4 +158,4 @@ fig.update_layout(
 )
 fig.update_traces(connectgaps=True)
 st.plotly_chart(fig, use_container_width=True)
-# st.table(nk.select(pl.all().cast(pl.Utf8)))
+st.table(data.nk.select(pl.all().cast(pl.Utf8)))

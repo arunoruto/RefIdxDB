@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.1.2 (2025-04-29)
+
+### Bug Fixes
+
+- Trigger new release 2
+  ([`10a0f2e`](https://github.com/arunoruto/RefIdxDB/commit/10a0f2e292be8572b73394b7672cb3c07c69bd34))
+
+
 ## v0.1.1 (2025-04-29)
 
 ### Bug Fixes

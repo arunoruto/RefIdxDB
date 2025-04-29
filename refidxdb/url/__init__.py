@@ -15,6 +15,13 @@ class URL(RefIdxDB):
     path: str | None = Field(default=None)
 
     @property
+    @abstractmethod
+    def scale(self) -> float:
+        """
+        A mandatory property that provides the default wavelength scale of the data.
+        """
+
+    @property
     def cache_dir(self) -> str:
         """
         The directory where the cached data will.

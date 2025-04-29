@@ -18,13 +18,6 @@ class RefIdxDB(BaseModel, ABC):
 
     @property
     @abstractmethod
-    def scale(self) -> float:
-        """
-        A mandatory property that provides the default wavelength scale of the data.
-        """
-
-    @property
-    @abstractmethod
     def data(self):
         """
         Get the raw data from the file provided by <path>.

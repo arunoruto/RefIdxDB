@@ -46,7 +46,7 @@ build-backend = "hatchling.build"
 
 [semantic_release]
 version_variable = ["refidxdb/__init__.py:__version__"]
-version_toml = ["definition.toml:project.version:nf"]
+version_toml = ["pyproject.toml:project.version:nf"]
 major_on_zero = false
 branch = "main"
 build_command = "uv build --no-sources"

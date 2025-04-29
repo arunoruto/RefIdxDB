@@ -44,6 +44,9 @@ jobs:
       - name: Setup | Force release branch to be at workflow sha
         run: git reset --hard ${{ github.sha }}
 
+      - name: Setup | Install uv
+        uses: astral-sh/setup-uv@v4
+
       - name: Evaluate | Verify upstream has NOT changed
         shell: bash
         run: |
@@ -94,9 +97,6 @@ jobs:
       # - name: Publish | Upload package to PyPI
       #   uses: pypa/gh-action-pypi-publish@SHA1_HASH # vX.X.X
       #   if: steps.release.outputs.released == 'true'
-
-      - name: Publish | Install uv
-        uses: astral-sh/setup-uv@v4
 
       - name: Publish | Build and Publish to PyPI
         if: steps.release.outputs.released == 'true'

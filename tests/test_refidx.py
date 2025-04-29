@@ -6,9 +6,8 @@ import numpy as np
 import polars as pl
 import polars.testing as plt
 import yaml
-
 from refidxdb.handler import Handler
-from refidxdb.refidx import RefIdx
+from refidxdb.url.refidx import RefIdx
 
 
 def test_iron_querry():

@@ -2,9 +2,17 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
-
-from refidxdb import databases
 from refidxdb.cli import cli
+from refidxdb.url.aria import Aria
+from refidxdb.url.refidx import RefIdx
+
+databases = {
+    item.__name__.lower(): item
+    for item in [
+        Aria,
+        RefIdx,
+    ]
+}
 
 
 # @pytest.mark.skip(reason="Takes too many resources for now")

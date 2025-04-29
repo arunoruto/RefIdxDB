@@ -1,6 +1,7 @@
 import re
 from functools import cached_property
 
+import numpy as np
 import polars as pl
 
 from . import URL
@@ -44,12 +45,23 @@ class Aria(URL):
         if "WAVN" in header["FORMAT"]:
             self._x_type = "wavenumber"
 
-        return pl.read_csv(
-            data.encode(),
-            schema_overrides={h: pl.Float64 for h in header["FORMAT"].split(" ")},
-            comment_prefix="#",
-            separator=" ",
+        try:
+            data = np.loadtxt(absolute_path, dtype="float64")
+        except UnicodeError as ue:
+            self._logger.warning(f"UnicodeDecodeError: {ue}")
+            self._logger.warning("Trying latin-1")
+            data = np.loadtxt(absolute_path, dtype="float64", encoding="latin-1")
+
+        return pl.DataFrame(
+            data,
+            schema={h: pl.Float64 for h in header["FORMAT"].split(" ")},
         )
+        # return pl.read_csv(
+        #     data.encode(),
+        #     schema_overrides={h: pl.Float64 for h in header["FORMAT"].split(" ")},
+        #     comment_prefix="#",
+        #     separator=" ",
+        # )
 
     @cached_property
     def nk(self):

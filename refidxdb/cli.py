@@ -7,13 +7,16 @@ from pathlib import Path
 import click
 import plotext as plt
 import polars as pl
-from streamlit import runtime
-from streamlit.web import cli as stcli
 from tqdm import tqdm
 
 from refidxdb.refidxdb import RefIdxDB
 from refidxdb.url.aria import Aria
 from refidxdb.url.refidx import RefIdx
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)-8s - %(levelname)s - %(message)s",
+)
 
 databases = {
     item.__name__.lower(): item

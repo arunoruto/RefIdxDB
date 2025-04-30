@@ -1,5 +1,5 @@
 from functools import cached_property
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import unquote
 
 import numpy as np
@@ -26,7 +26,14 @@ class Handler(BaseModel):
         default=None,
         description="URL of the refractive index data source. Supported sources: refractiveindex.info, eodg.atm.ox.ac.uk",
     )
-    wavelength: bool = Field(default=True)
+    wavelength: bool = Field(
+        default=True,
+        description="How the output data should be treated: True - wavelength, False - wavenumber",
+    )
+    w_column: bool | Literal["wl", "wn"] = Field(
+        default=True,
+        description="Is the first column providing wavelength or wavenumber data? [True,'wl'] - wavelength, [False,'wn'] - wavenumber",
+    )
     _source: RefIdxDB | None = PrivateAttr(default=None)
 
     def model_post_init(self, __context: Any) -> None:
@@ -52,16 +59,21 @@ class Handler(BaseModel):
                 case _:
                     raise Exception(f"Unsupported source ${self.url.host}")
         elif self.path is not None:
+            # TODO: quick fix, can be done nicer!
+            if isinstance(self.w_column, bool):
+                self.w_column = "wl" if self.w_column else "wn"
             match self.path.split(".")[-1].lower():
                 case "csv":
                     self._source = CSV(
                         path=self.path,
                         wavelength=self.wavelength,
+                        w_column=self.w_column,
                     )
                 case "dat":
                     self._source = DAT(
                         path=self.path,
                         wavelength=self.wavelength,
+                        w_column=self.w_column,
                     )
                 case _:
                     raise Exception(f"Unsupported file type {self.path.split('.')[-1]}")

@@ -58,7 +58,6 @@ class Handler(BaseModel):
                         path=self.path,
                         wavelength=self.wavelength,
                     )
-                    raise NotImplementedError("CSV file support is not implemented yet")
                 case "dat":
                     self._source = DAT(
                         path=self.path,

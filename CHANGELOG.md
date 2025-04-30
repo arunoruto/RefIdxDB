@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.2.0 (2025-04-30)
+
+### Features
+
+- Add CSV support in handler
+  ([`3b53cfe`](https://github.com/arunoruto/RefIdxDB/commit/3b53cfec421fe20d287771af2518b3c48b7de0aa))
+
+
 ## v0.1.2 (2025-04-29)
 
 ### Bug Fixes

@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.2.1 (2025-04-30)
+
+### Bug Fixes
+
+- Remove exception for csv handling
+  ([`e4dd329`](https://github.com/arunoruto/RefIdxDB/commit/e4dd329b69eb5ad4468306f467168370739284a2))
+
+
 ## v0.2.0 (2025-04-30)
 
 ### Features

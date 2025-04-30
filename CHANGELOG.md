@@ -1,6 +1,14 @@
 # CHANGELOG
 
 
+## v0.3.0 (2025-04-30)
+
+### Features
+
+- Add w_column to handler
+  ([`502a71f`](https://github.com/arunoruto/RefIdxDB/commit/502a71fa4ef34bb9d00ab1fe7a0c912bbb1bfba6))
+
+
 ## v0.2.1 (2025-04-30)
 
 ### Bug Fixes

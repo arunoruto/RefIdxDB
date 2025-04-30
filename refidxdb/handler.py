@@ -8,6 +8,7 @@ import polars as pl
 from pydantic import BaseModel, Field, HttpUrl, PrivateAttr
 from rich.traceback import install
 
+from refidxdb.file.csv import CSV
 from refidxdb.file.dat import DAT
 from refidxdb.refidxdb import RefIdxDB
 from refidxdb.url.aria import Aria
@@ -53,10 +54,10 @@ class Handler(BaseModel):
         elif self.path is not None:
             match self.path.split(".")[-1].lower():
                 case "csv":
-                    # self._source = RefIdx(
-                    #     path=self.path,
-                    #     wavelength=self.wavelength,
-                    # )
+                    self._source = CSV(
+                        path=self.path,
+                        wavelength=self.wavelength,
+                    )
                     raise NotImplementedError("CSV file support is not implemented yet")
                 case "dat":
                     self._source = DAT(

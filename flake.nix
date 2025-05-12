@@ -53,6 +53,7 @@
           self',
           pkgs,
           lib,
+          system,
           ...
         }:
         let
@@ -83,6 +84,11 @@
 
         in
         {
+          _module.args.pkgs = import nixpkgs {
+            inherit system;
+            config.allowUnfree = true;
+          };
+
           packages = {
             default = self'.packages.refidxdb;
             refidxdb = python.pkgs.buildPythonPackage (
@@ -141,6 +147,7 @@
                 packages = [
                   virtualenv
                   pkgs.uv
+                  pkgs.sourcery
                 ];
                 shellHook = ''
                   unset PYTHONPATH

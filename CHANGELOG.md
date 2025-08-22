@@ -1,6 +1,53 @@
 # CHANGELOG
 
 
+## v0.4.0 (2025-08-22)
+
+### Chores
+
+- Sync lock file and move test to dependency-groups
+  ([`02937d3`](https://github.com/arunoruto/RefIdxDB/commit/02937d38096e878982d9e6fd86eb51acff9b1c88))
+
+This changes makes the test suite unavailable for normal users!
+
+- Try latin-1 encoding for dat files (aria too)
+  ([`b5c0b27`](https://github.com/arunoruto/RefIdxDB/commit/b5c0b27024e0794d337e3e3fe4e971b1b1faf76a))
+
+- Update refidxdb database
+  ([`6b0799e`](https://github.com/arunoruto/RefIdxDB/commit/6b0799e3f9c471118230b658c225429d0807e15a))
+
+### Code Style
+
+- Format code with isort and Ruff Formatter
+  ([`67b3aaf`](https://github.com/arunoruto/RefIdxDB/commit/67b3aaf7530ec750d59c912d83259a8dc78bb36f))
+
+This commit fixes the style issues introduced in b5c0b27 according to the output from isort and Ruff
+  Formatter.
+
+Details: None
+
+- Format code with isort and Ruff Formatter
+  ([`4612ba2`](https://github.com/arunoruto/RefIdxDB/commit/4612ba22f0470f477f61195eec9ee01e576d70c4))
+
+This commit fixes the style issues introduced in 47e13db according to the output from isort and Ruff
+  Formatter.
+
+Details: None
+
+### Continuous Integration
+
+- Fix name typo in job dependecies
+  ([`32948cc`](https://github.com/arunoruto/RefIdxDB/commit/32948cc80e0c37f354a921b3b6a06110b9bd2fd5))
+
+### Features
+
+- Move from flake to devenv
+  ([`2647fa5`](https://github.com/arunoruto/RefIdxDB/commit/2647fa584045a989177693e970002e2e50626752))
+
+devenv seems to be easier to manage compared to flakes now and enables easier development between
+  people!
+
+
 ## v0.3.0 (2025-04-30)
 
 ### Features

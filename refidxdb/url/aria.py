@@ -46,11 +46,11 @@ class Aria(URL):
             self._x_type = "wavenumber"
 
         try:
-            data = np.loadtxt(absolute_path, dtype="float64")
+            data = np.loadtxt(absolute_path, dtype="float64", encoding="latin-1")
         except UnicodeError as ue:
             self._logger.warning(f"UnicodeDecodeError: {ue}")
-            self._logger.warning("Trying latin-1")
-            data = np.loadtxt(absolute_path, dtype="float64", encoding="latin-1")
+            self._logger.warning("Trying utf-8")
+            data = np.loadtxt(absolute_path, dtype="float64", encoding="utf-8")
 
         return pl.DataFrame(
             data,

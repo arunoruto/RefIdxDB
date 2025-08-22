@@ -6,6 +6,7 @@ import numpy as np
 import polars as pl
 import polars.testing as plt
 import yaml
+
 from refidxdb.handler import Handler
 from refidxdb.url.refidx import RefIdx
 

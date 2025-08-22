@@ -6,7 +6,6 @@ import numpy as np
 import polars as pl
 import polars.testing as plt
 import yaml
-
 from refidxdb.handler import Handler
 from refidxdb.url.refidx import RefIdx
 
@@ -27,7 +26,7 @@ def test_iron_querry():
     )
 
     # Test loading
-    refidx = RefIdx(path="database/data-nk/main/Fe/Querry.yml")
+    refidx = RefIdx(path="database/data/main/Fe/nk/Querry.yml")
     plt.assert_frame_equal(data, refidx.nk.drop("n_is_not_null"))
 
     # Test interpolation
@@ -55,19 +54,19 @@ def test_iron_querry():
     # casting for mitigating linting issue
     handler = Handler(
         url=cast(
-            Any, "https://refractiveindex.info/database/data-nk/main/Fe/Querry.yml"
+            Any, "https://refractiveindex.info/database/data/main/Fe/nk/Querry.yml"
         )
     )
     plt.assert_frame_equal(data, handler.nk.drop("n_is_not_null"))
 
 
-# express from https://refractiveindex.info/tmp/database/data-nk/other/semiconductor%20alloys/AlAs-GaAs/Perner-0.html
+# express from https://refractiveindex.info/tmp/database/data/other/semiconductor%20alloys/AlAs-GaAs/nk/Perner-0.html
 def test_algaas_perner0():
     def n(x):
         return (1 + 9.705183027405873 / (1 - (0.38586135365339097 / x) ** 2)) ** 0.5
 
     wn = RefIdx(
-        path="database/data-nk/other/semiconductor alloys/AlAs-GaAs/Perner-0.yml"
+        path="database/data/other/semiconductor alloys/AlAs-GaAs/nk/Perner-0.yml"
     )
     wn = (
         # wn.nk.filter(pl.col("n").is_not_null())
@@ -80,7 +79,7 @@ def test_algaas_perner0():
     np.testing.assert_allclose(n_gt, n_my, rtol=1e-7)
 
 
-# express from https://refractiveindex.info/tmp/database/data-nk/glass/ohara/S-BAL2.html
+# express from https://refractiveindex.info/tmp/database/data/specs/ohara/optical/S-BAL2.html
 def test_ohara_sbal2():
     def n(x):
         return (
@@ -90,7 +89,7 @@ def test_ohara_sbal2():
             + 1.17882259 / (1 - 140.257892 / x**2)
         ) ** 0.5
 
-    wn = RefIdx(path="database/data-nk/glass/ohara/S-BAL2.yml")
+    wn = RefIdx(path="database/data/specs/ohara/optical/S-BAL2.yml")
     wn = (
         # wn.nk.filter(pl.col("n").is_not_null())
         wn.nk.filter(pl.col("n_is_not_null"))
@@ -102,7 +101,7 @@ def test_ohara_sbal2():
     np.testing.assert_allclose(n_gt, n_my, rtol=1e-7)
 
 
-# express from https://refractiveindex.info/tmp/database/data-nk/glass/ohara/BAL2.html
+# express from https://refractiveindex.info/tmp/database/data/specs/ohara/optical/BAL2.html
 def test_ohara_bal2():
     def n(x):
         return (
@@ -114,7 +113,7 @@ def test_ohara_bal2():
             + 2.420757e-06 * x**-8
         ) ** 0.5
 
-    wn = RefIdx(path="database/data-nk/glass/ohara/BAL2.yml")
+    wn = RefIdx(path="database/data/specs/ohara/optical/BAL2.yml")
     wn = (
         # wn.nk.filter(pl.col("n").is_not_null())
         wn.nk.filter(pl.col("n_is_not_null"))

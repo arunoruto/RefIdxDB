@@ -18,7 +18,8 @@ class RefIdx(URL):
 
     @property
     def url(self) -> str:
-        return "https://github.com/polyanskiy/refractiveindex.info-database/releases/download/v2024-08-14/rii-database-2024-08-14.zip"
+        return "https://github.com/polyanskiy/refractiveindex.info-database/releases/download/v2025-02-23/rii-database-2025-02-23.zip"
+        # return "https://github.com/polyanskiy/refractiveindex.info-database/releases/download/v2024-08-14/rii-database-2024-08-14.zip"
 
     @property
     def scale(self) -> float:

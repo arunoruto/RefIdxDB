@@ -28,7 +28,7 @@ jobs:
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
           uv venv
-          uv sync --extra test
+          uv sync --group test
 
       # - name: Cache databases
       #   id: cache-databases

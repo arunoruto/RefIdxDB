@@ -1,4 +1,12 @@
-.direnv
+# Nix & devenv
+result
+/.env
+/.env.*
+.devenv*
+.direnv*
+/.cache
+/.pre-commit-config.yaml
+man
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

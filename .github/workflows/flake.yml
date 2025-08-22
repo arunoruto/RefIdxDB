@@ -2,11 +2,11 @@ name: Validate Nix Flake
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - "flake.nix"
-      - "flake.lock"
-      - ".github/workflows/flake.yml"
+  # push:
+  #   paths:
+  #     - "flake.nix"
+  #     - "flake.lock"
+  #     - ".github/workflows/flake.yml"
 
 jobs:
   check-flake:

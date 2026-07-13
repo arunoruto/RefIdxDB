@@ -6,8 +6,6 @@ import numpy.typing as npt
 import polars as pl
 from pydantic import BaseModel, Field, PrivateAttr
 
-CHUNK_SIZE = 8192
-
 
 class RefIdxDB(BaseModel, ABC):
     wavelength: bool = Field(default=True)
@@ -34,7 +32,7 @@ class RefIdxDB(BaseModel, ABC):
         self,
         target: npt.NDArray[np.float64],
         scale: float | None = None,
-        complex: bool = False,
+        as_complex: bool = False,
     ) -> pl.DataFrame | npt.NDArray[np.complex128]:
         """
         Interpolate the refractive index values to the target array.
@@ -59,7 +57,7 @@ class RefIdxDB(BaseModel, ABC):
             )
         )
 
-        if complex:
+        if as_complex:
             return interpolated["n"].to_numpy() + 1j * interpolated["k"].to_numpy()
 
         return interpolated

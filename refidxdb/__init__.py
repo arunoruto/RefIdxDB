@@ -1,22 +1,18 @@
-# from refidxdb.file.dat import DAT
-# from refidxdb.handler import Handler
-# from refidxdb.refidxdb import RefIdxDB
-# from refidxdb.url.aria import Aria
-# from refidxdb.url.refidx import RefIdx
+from refidxdb.file.csv import CSV
+from refidxdb.file.dat import DAT
+from refidxdb.handler import Handler
+from refidxdb.refidxdb import RefIdxDB
+from refidxdb.url.aria import Aria
+from refidxdb.url.refidx import RefIdx
 
-# databases = {
-#     item.__name__.lower(): item
-#     for item in [
-#         Aria,
-#         RefIdx,
-#     ]
-# }
+__version__ = "0.4.0"
 
-# files = {
-#     item.__name__.lower(): item
-#     for item in [
-#         DAT,
-#     ]
-# }
-
-__version__ = "0.1.0"
+__all__ = [
+    "Aria",
+    "CSV",
+    "DAT",
+    "Handler",
+    "RefIdx",
+    "RefIdxDB",
+    "__version__",
+]

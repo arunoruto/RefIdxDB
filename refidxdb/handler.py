@@ -5,16 +5,13 @@ from urllib.parse import unquote
 import numpy as np
 import numpy.typing as npt
 import polars as pl
-from pydantic import BaseModel, Field, HttpUrl, PrivateAttr
-from rich.traceback import install
+from pydantic import BaseModel, Field, HttpUrl, PrivateAttr, field_validator
 
 from refidxdb.file.csv import CSV
 from refidxdb.file.dat import DAT
 from refidxdb.refidxdb import RefIdxDB
 from refidxdb.url.aria import Aria
 from refidxdb.url.refidx import RefIdx
-
-_ = install(show_locals=True)
 
 
 class Handler(BaseModel):
@@ -32,17 +29,24 @@ class Handler(BaseModel):
     )
     w_column: bool | Literal["wl", "wn"] = Field(
         default=True,
+        validate_default=True,
         description="Is the first column providing wavelength or wavenumber data? [True,'wl'] - wavelength, [False,'wn'] - wavenumber",
     )
     _source: RefIdxDB | None = PrivateAttr(default=None)
 
+    @field_validator("w_column", mode="before")
+    @classmethod
+    def _normalize_w_column(cls, value: Any) -> Any:
+        """Normalize the boolean shorthand to the explicit ``wl``/``wn`` form."""
+        if isinstance(value, bool):
+            return "wl" if value else "wn"
+        return value
+
     def model_post_init(self, __context: Any) -> None:
         if self.url is not None:
             if self.url.path is None:
-                raise Exception("Path of url is not present")
+                raise ValueError("Path of url is not present")
             path = unquote(self.url.path)
-            # if path is None:
-            #     raise Exception("Path of url is not present")
             match self.url.host:
                 case "refractiveindex.info":
                     self._source = RefIdx(
@@ -57,12 +61,10 @@ class Handler(BaseModel):
                         wavelength=self.wavelength,
                     )
                 case _:
-                    raise Exception(f"Unsupported source ${self.url.host}")
+                    raise ValueError(f"Unsupported source {self.url.host}")
         elif self.path is not None:
-            # TODO: quick fix, can be done nicer!
-            if isinstance(self.w_column, bool):
-                self.w_column = "wl" if self.w_column else "wn"
-            match self.path.split(".")[-1].lower():
+            extension = self.path.split(".")[-1].lower()
+            match extension:
                 case "csv":
                     self._source = CSV(
                         path=self.path,
@@ -76,9 +78,9 @@ class Handler(BaseModel):
                         w_column=self.w_column,
                     )
                 case _:
-                    raise Exception(f"Unsupported file type {self.path.split('.')[-1]}")
+                    raise ValueError(f"Unsupported file type {extension}")
         else:
-            raise Exception("Either path or url should be provided")
+            raise ValueError("Either path or url should be provided")
 
     # TODO: implemented for debuging, remove when not needed anymore
     @property
@@ -88,15 +90,17 @@ class Handler(BaseModel):
     @cached_property
     def nk(self) -> pl.DataFrame:
         if self._source is None:
-            raise Exception("Source is not initialized")
+            raise RuntimeError("Source is not initialized")
         return self._source.nk
 
     def interpolate(
         self,
         target: npt.NDArray[np.float64],
         scale: float | None = None,
-        complex: bool = False,
+        as_complex: bool = False,
     ) -> pl.DataFrame | npt.NDArray[np.complex128]:
         if self._source is None:
-            raise Exception("Source is not initialized")
-        return self._source.interpolate(target=target, scale=scale, complex=complex)
+            raise RuntimeError("Source is not initialized")
+        return self._source.interpolate(
+            target=target, scale=scale, as_complex=as_complex
+        )

@@ -8,34 +8,7 @@ import streamlit as st
 
 from refidxdb.file.csv import CSV
 from refidxdb.file.dat import DAT
-from refidxdb.url.aria import Aria
-from refidxdb.url.refidx import RefIdx
-
-# from refidxdb import databases, files
-
-# try:
-#     from refidxdb.file.dat import DAT
-#     from refidxdb.url.aria import Aria
-#     from refidxdb.url.refidx import RefIdx
-# except ImportError:
-#     # If running outside of the refidxdb directory, add it to the path
-#     import sys
-
-#     root = Path(__file__).parent.absolute().as_posix()
-#     print(root)
-#     print(type(root))
-#     sys.path.append(root)
-#     from .file.dat import DAT
-#     from .url.aria import Aria
-#     from .url.refidx import RefIdx
-
-databases = {
-    item.__name__.lower(): item
-    for item in [
-        Aria,
-        RefIdx,
-    ]
-}
+from refidxdb.sources import DATABASES
 
 st.set_page_config(layout="wide")
 st.title("RefIdxDB")
@@ -43,7 +16,7 @@ st.title("RefIdxDB")
 
 db = st.radio(
     "Database",
-    list(databases.keys()) + ["Upload"],
+    list(DATABASES.keys()) + ["Upload"],
 )
 
 if db == "Upload":
@@ -65,7 +38,7 @@ if db == "Upload":
         help="Scale for wavenumber to wavelength conversion. Default is 1e-2.",
     )
     scale_file = 10**scale_file
-    col2.write(f"Sale: {scale_file:.0e}")
+    col2.write(f"Scale: {scale_file:.0e}")
 
     if file is None:
         st.stop()
@@ -80,14 +53,13 @@ if db == "Upload":
     match name.split(".")[-1]:
         case "dat" | "ri":
             db_class = DAT
-            # st.write(np.loadtxt(StringIO(content)))
         case "csv":
             db_class = CSV
-            # st.write(pl.read_csv(StringIO(content)))
         case _:
-            st.write(file)
+            st.error(f"Unsupported file type: {name}")
+            st.stop()
 else:
-    cache_dir = databases[db]().cache_dir
+    cache_dir = DATABASES[db]().cache_dir
     files = [str(item) for item in Path(cache_dir).rglob("*") if item.is_file()]
     if db == "refidx":
         files = [item for item in files if re.search(r"/data-nk", item)]
@@ -96,7 +68,7 @@ else:
         files,
         format_func=lambda x: "/".join(x.replace(cache_dir, "").split("/")[2:]),
     )
-    db_class = databases[db]
+    db_class = DATABASES[db]
 
 wavelength = st.toggle("Plot: Wavenumber / Wavelength", True)
 logx = st.checkbox("Log x-axis", False)

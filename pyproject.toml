@@ -19,6 +19,9 @@ dependencies = [
   "tqdm>=4.66.5",
 ]
 
+[project.optional-dependencies]
+build = ["python-semantic-release ~= 10.0"]
+
 [dependency-groups]
 test = ["pytest>=8.3.3", "pytest-cov>=5.0.0"]
 
@@ -54,7 +57,11 @@ build-backend = "uv_build"
 version_variables = ["refidxdb/__init__.py:__version__"]
 version_toml = ["pyproject.toml:project.version"]
 major_on_zero = false
-build_command = "uv build"
+build_command = """
+    uv lock --upgrade-package "$PACKAGE_NAME"
+    git add uv.lock
+    uv build
+"""
 
 [tool.semantic_release.branches.main]
 match = "main"

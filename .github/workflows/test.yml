@@ -30,19 +30,25 @@ jobs:
           uv venv
           uv sync --group test
 
-      # - name: Cache databases
-      #   id: cache-databases
-      #   uses: actions/cache@v4
-      #   with:
-      #     path: ~/.cache/refidxdb
-      #     key: ${{ runner.os }}-databases-${{ hashFiles('pyproject.toml') }}
+      - name: Cache databases
+        id: cache-databases
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/refidxdb
+          # Invalidate when a database URL (and thus its version) changes.
+          key: ${{ runner.os }}-databases-${{ hashFiles('refidxdb/url/aria.py', 'refidxdb/url/refidx.py') }}
 
-      # - name: Download databases
-      #   if: steps.cache-databases.outputs.cache-hit != 'true'
-      #   run: uv run refidxdb db --download all
+      - name: Download databases
+        # Best-effort: on a network hiccup the cache-relative tests just skip.
+        if: steps.cache-databases.outputs.cache-hit != 'true'
+        continue-on-error: true
+        run: uv run refidxdb db --download all
 
       - name: Test and coverage report with pytest
-        run: uv run pytest --cov --cov-report xml --junitxml=junit.xml -o junit_family=legacy
+        # The real-download test is marked `network`; the cache-relative
+        # assertions run when the download above populated the cache and skip
+        # otherwise, so this run stays deterministic.
+        run: uv run pytest -m "not network" --cov --cov-report xml --junitxml=junit.xml -o junit_family=legacy
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

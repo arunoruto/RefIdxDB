@@ -1,21 +1,22 @@
-import os
 from io import StringIO
 from typing import Any, cast
 
 import numpy as np
 import polars as pl
 import polars.testing as plt
+import pytest
 import yaml
 
 from refidxdb.handler import Handler
-from refidxdb.url.refidx import RefIdx
+from refidxdb.url.refidx import RefIdx, formula, formula2
+
+from .conftest import skip_if_not_cached
 
 
-def test_iron_querry():
-    with open(os.path.dirname(__file__) + "/data/Querry.yml", "r") as f:
+def _querry_ground_truth(querry_yml) -> pl.DataFrame:
+    with open(querry_yml, "r") as f:
         querry = yaml.safe_load(f)
-
-    data = (
+    return (
         pl.read_csv(
             StringIO(querry["DATA"][0]["data"]),
             has_header=False,
@@ -26,11 +27,15 @@ def test_iron_querry():
         .sort("w")
     )
 
-    # Test loading
-    refidx = RefIdx(path="database/data/main/Fe/nk/Querry.yml")
+
+def test_iron_querry(querry_yml):
+    data = _querry_ground_truth(querry_yml)
+
+    # Loading directly from the local fixture (no cache needed)
+    refidx = RefIdx(path=querry_yml)
     plt.assert_frame_equal(data, refidx.nk.drop("n_is_not_null"))
 
-    # Test interpolation
+    # Interpolation
     groundtrouth = pl.DataFrame(
         {
             "w": [2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0],
@@ -51,7 +56,11 @@ def test_iron_querry():
     interpolated = pl.DataFrame(interpolated)
     plt.assert_frame_equal(groundtrouth, interpolated)
 
-    # Test handler version
+
+def test_iron_querry_handler(querry_yml):
+    # Resolves against the download cache + host dispatch; skips if not cached.
+    skip_if_not_cached(RefIdx, "database/data/main/Fe/nk/Querry.yml")
+    data = _querry_ground_truth(querry_yml)
     # casting for mitigating linting issue
     handler = Handler(
         url=cast(
@@ -66,11 +75,10 @@ def test_algaas_perner0():
     def n(x):
         return (1 + 9.705183027405873 / (1 - (0.38586135365339097 / x) ** 2)) ** 0.5
 
-    wn = RefIdx(
-        path="database/data/other/semiconductor alloys/AlAs-GaAs/nk/Perner-0.yml"
-    )
+    path = "database/data/other/semiconductor alloys/AlAs-GaAs/nk/Perner-0.yml"
+    skip_if_not_cached(RefIdx, path)
+    wn = RefIdx(path=path)
     wn = (
-        # wn.nk.filter(pl.col("n").is_not_null())
         wn.nk.filter(pl.col("n_is_not_null"))
         .drop("k")
         .with_columns(pl.col("w").mul(1e6))
@@ -90,9 +98,10 @@ def test_ohara_sbal2():
             + 1.17882259 / (1 - 140.257892 / x**2)
         ) ** 0.5
 
-    wn = RefIdx(path="database/data/specs/ohara/optical/S-BAL2.yml")
+    path = "database/data/specs/ohara/optical/S-BAL2.yml"
+    skip_if_not_cached(RefIdx, path)
+    wn = RefIdx(path=path)
     wn = (
-        # wn.nk.filter(pl.col("n").is_not_null())
         wn.nk.filter(pl.col("n_is_not_null"))
         .drop("k")
         .with_columns(pl.col("w").mul(1e6))
@@ -100,6 +109,43 @@ def test_ohara_sbal2():
     n_gt = wn["n"].to_numpy()
     n_my = n(wn["w"].to_numpy())
     np.testing.assert_allclose(n_gt, n_my, rtol=1e-7)
+
+
+def test_formula2_matches_sellmeier():
+    # Evaluate formula 2 directly against the explicit Sellmeier expression.
+    c = np.array([0.0, 1.0, 0.01, 0.2, 0.02])
+    f = formula2(c)
+    x = np.array([0.5, 0.6, 0.7])
+    expected = np.sqrt(1 + c[0] + c[1] / (1 - c[2] / x**2) + c[3] / (1 - c[4] / x**2))
+    np.testing.assert_allclose(f(x), expected)
+
+
+def test_formula_unsupported_number():
+    with pytest.raises(NotImplementedError):
+        formula(4, {"wavelength_range": "0.4 0.8", "coefficients": "1 2 3"})
+
+
+def test_refidx_tabulated_n_and_k(tmp_path):
+    # Exercise the "tabulated n" and "tabulated k" branches without the cache.
+    doc = {
+        "DATA": [
+            {"type": "tabulated n", "data": "0.5 1.5\n0.6 1.6\n0.7 1.7"},
+            {"type": "tabulated k", "data": "0.5 0.1\n0.6 0.2\n0.7 0.3"},
+        ]
+    }
+    path = tmp_path / "tabulated.yml"
+    path.write_text(yaml.safe_dump(doc))
+    nk = RefIdx(path=str(path)).nk
+    assert set(nk.columns) >= {"w", "n", "k"}
+    assert nk.height == 6
+
+
+def test_refidx_unsupported_data_type(tmp_path):
+    doc = {"DATA": [{"type": "totally bogus", "data": "0.5 1.0 0.1"}]}
+    path = tmp_path / "bad.yml"
+    path.write_text(yaml.safe_dump(doc))
+    with pytest.raises(ValueError):
+        _ = RefIdx(path=str(path)).nk
 
 
 # express from https://refractiveindex.info/tmp/database/data/specs/ohara/optical/BAL2.html
@@ -114,9 +160,10 @@ def test_ohara_bal2():
             + 2.420757e-06 * x**-8
         ) ** 0.5
 
-    wn = RefIdx(path="database/data/specs/ohara/optical/BAL2.yml")
+    path = "database/data/specs/ohara/optical/BAL2.yml"
+    skip_if_not_cached(RefIdx, path)
+    wn = RefIdx(path=path)
     wn = (
-        # wn.nk.filter(pl.col("n").is_not_null())
         wn.nk.filter(pl.col("n_is_not_null"))
         .drop("k")
         .with_columns(pl.col("w").mul(1e6))

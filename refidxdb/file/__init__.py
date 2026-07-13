@@ -8,8 +8,6 @@ from pydantic import ConfigDict, Field
 
 from refidxdb.refidxdb import RefIdxDB
 
-CHUNK_SIZE = 8192
-
 
 class File(RefIdxDB):
     path: str | StringIO | Path = Field(default="")
@@ -28,7 +26,7 @@ class File(RefIdxDB):
     @cached_property
     def nk(self):
         if self.data is None:
-            raise Exception("Data could not have been loaded")
+            raise RuntimeError("Data could not have been loaded")
 
         w = self.data["w"] * self.scale
         match (self.wavelength, self.w_column):

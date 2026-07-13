@@ -1,80 +1,65 @@
-from pathlib import Path
-
 import numpy as np
 import polars as pl
 import polars.testing as plt
+import pytest
 
-from refidxdb.file.dat import DAT
+from refidxdb.file.csv import CSV
 from refidxdb.handler import Handler
 
-# def test_amorphous_carbon_csv():
-#     file = Path(__file__).parent / "data/olivine_Z_Fabian_2001.ri"
-#     fabian = (
-#         pl.DataFrame(
-#             np.loadtxt(file, encoding="latin-1"),
-#             schema={"WAVN": pl.Float64, "N": pl.Float64, "K": pl.Float64},
-#         )
-#         .with_columns(pl.col("WAVN").mul(1e2))
-#         .sort("WAVN")
-#     )
-#     fabian.columns = ["w", "n", "k"]
-#     # fabian = (
-#     #     pl.read_csv(
-#     #         file,
-#     #         has_header=False,
-#     #         schema_overrides={"WAVN": pl.Float64, "N": pl.Float64, "K": pl.Float64},
-#     #         comment_prefix="#",
-#     #         separator="\t",
-#     #     )
-#     #     .with_columns(pl.col("WAVN").mul(1e2))
-#     #     .sort("WAVN")
-#     # )
-#     # fabian.columns = ["w", "n", "k"]
 
-#     # Test loading
-#     aria = DAT(
-#         path=file,
-#         wavelength=False,
-#         w_column="wn",
-#     )
-#     plt.assert_frame_equal(fabian, aria.nk)
+def test_csv_empty_path_raises():
+    with pytest.raises(ValueError):
+        _ = CSV().data
 
-#     # Test interpolation
-#     groundtrouth = pl.DataFrame(
-#         {
-#             "w": np.arange(1, 10),
-#             "n": [
-#                 2.468589000000000,
-#                 2.468603409016394,
-#                 2.468626565929566,
-#                 2.468658287469288,
-#                 2.468698850000000,
-#                 2.468748850000000,
-#                 2.468809098280098,
-#                 2.468878274365274,
-#                 2.468956009828010,
-#             ],
-#             "k": [
-#                 0.000063882063882,
-#                 0.000127804918033,
-#                 0.000191710073710,
-#                 0.000255592137592,
-#                 0.000319576229508,
-#                 0.000384330327869,
-#                 0.000448302211302,
-#                 0.000512184275184,
-#                 0.000576438984439,
-#             ],
-#         }
-#     )
-#     interpolated = aria.interpolate(groundtrouth["w"].to_numpy())
-#     plt.assert_frame_equal(groundtrouth, interpolated)
-#     # with pl.Config(float_precision=15):
-#     #     print(interpolated["n"])
-#     #     print(interpolated["k"])
-#     # Test handler version
-#     handler = Handler(
-#         url="https://eodg.atm.ox.ac.uk/ARIA/data_files/Minerals/Olivine/z_orientation_(Fabian_et_al._2001)/olivine_Z_Fabian_2001.ri",
-#         wavelength=False,
-#     )
-#     plt.assert_frame_equal(fabian, handler.nk)
+
+def _raw(carbon_csv) -> pl.DataFrame:
+    return pl.read_csv(
+        carbon_csv,
+        schema_overrides={h: pl.Float64 for h in ["w", "n", "k"]},
+    )
+
+
+def test_csv_wavenumber_to_wavelength(carbon_csv):
+    raw = _raw(carbon_csv)
+    # Source treats the first column as wavenumber (scale 1e2) and, for a
+    # wavelength request, inverts it: w = 1 / (w_raw * 1e2).
+    expected = pl.DataFrame(
+        {
+            "w": 1.0 / (raw["w"] * 1e2),
+            "n": raw["n"],
+            "k": raw["k"],
+        }
+    ).sort("w")
+
+    csv = CSV(path=carbon_csv, w_column="wn", wavelength=True)
+    plt.assert_frame_equal(expected, csv.nk)
+
+
+def test_csv_wavenumber_passthrough(carbon_csv):
+    raw = _raw(carbon_csv)
+    # wavenumber in / wavenumber out: no inversion, just the 1e2 scale.
+    expected = pl.DataFrame({"w": raw["w"] * 1e2, "n": raw["n"], "k": raw["k"]}).sort(
+        "w"
+    )
+
+    csv = CSV(path=carbon_csv, w_column="wn", wavelength=False)
+    plt.assert_frame_equal(expected, csv.nk)
+
+
+def test_csv_interpolate_in_range(carbon_csv):
+    csv = CSV(path=carbon_csv, w_column="wn", wavelength=False)
+    lo, hi = csv.nk["w"].min(), csv.nk["w"].max()
+    target = np.linspace(lo, hi, 5) / 1e2  # interpolate() rescales by 1e2
+    out = csv.interpolate(target)
+    assert set(out.columns) == {"w", "n", "k"}
+    assert out["n"].is_finite().all()
+    assert out["k"].is_finite().all()
+
+
+def test_csv_handler_dispatch(carbon_csv):
+    # Handler routes a .csv path to the CSV source; boolean w_column=False -> "wn".
+    handler = Handler(path=carbon_csv, w_column=False, wavelength=False)
+    assert isinstance(handler.source, CSV)
+
+    direct = CSV(path=carbon_csv, w_column="wn", wavelength=False)
+    plt.assert_frame_equal(direct.nk, handler.nk)

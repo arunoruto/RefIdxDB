@@ -1,14 +1,14 @@
-import re
 from functools import cached_property
 
 import numpy as np
 import polars as pl
+from pydantic import PrivateAttr
 
 from . import URL
 
 
 class Aria(URL):
-    _x_type: str = "wavelength"
+    _x_type: str = PrivateAttr(default="wavelength")
 
     @property
     def url(self) -> str:
@@ -22,25 +22,21 @@ class Aria(URL):
             case "wavenumber":
                 return 1e2
             case _:
-                raise Exception(f"Unsupported {self._x_type} type for x-axis")
+                raise ValueError(f"Unsupported {self._x_type} type for x-axis")
 
     @cached_property
     def data(self):
         if self.path is None:
-            raise Exception("Path is not set, cannot retrieve any data!")
+            raise ValueError("Path is not set, cannot retrieve any data!")
         if self.path.startswith("/"):
             absolute_path = self.path
         else:
             absolute_path = f"{self.cache_dir}/{self.path}"
-        with open(absolute_path, "r", encoding="cp1252") as f:
-            data = f.readlines()
-            header = [h for h in data if h.startswith("#")]
-            header = [h for h in header if not h.startswith("##")]
-            header = [h.split("=") for h in header]
-            header = {h[0][1:].strip(): h[1].strip() for h in header}
-            # print(header)
-            data = [d.strip() for d in data if not d.startswith("#")]
-            data = re.sub(r"[ \t]{1,}", " ", "\n".join(data))
+        with open(absolute_path, "r", encoding="latin-1") as f:
+            header = [h for h in f.readlines() if h.startswith("#")]
+        header = [h for h in header if not h.startswith("##")]
+        header = [h.split("=") for h in header]
+        header = {h[0][1:].strip(): h[1].strip() for h in header}
 
         if "WAVN" in header["FORMAT"]:
             self._x_type = "wavenumber"
@@ -56,17 +52,11 @@ class Aria(URL):
             data,
             schema={h: pl.Float64 for h in header["FORMAT"].split(" ")},
         )
-        # return pl.read_csv(
-        #     data.encode(),
-        #     schema_overrides={h: pl.Float64 for h in header["FORMAT"].split(" ")},
-        #     comment_prefix="#",
-        #     separator=" ",
-        # )
 
     @cached_property
     def nk(self):
         if self.data is None:
-            raise Exception("Data could not have been loaded")
+            raise RuntimeError("Data could not have been loaded")
         # Using a small trick
         # micro is 10^-6 and 1/centi is 10^2,
         # but we will use 10^-2, since the value needs to be inverted

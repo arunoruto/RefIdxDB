@@ -1,3 +1,4 @@
+import os
 from abc import abstractmethod
 from io import BytesIO
 from pathlib import Path
@@ -10,6 +11,9 @@ from tqdm import tqdm
 from refidxdb.refidxdb import RefIdxDB
 
 CHUNK_SIZE = 8192
+# Per-socket-operation timeout (seconds) so a stalled connection cannot hang
+# the download forever.
+DOWNLOAD_TIMEOUT = 30
 
 
 class URL(RefIdxDB):
@@ -25,10 +29,12 @@ class URL(RefIdxDB):
     @property
     def cache_dir(self) -> str:
         """
-        The directory where the cached data will.
-        Defaults to $HOME/.cache/<__file__>.
+        The directory where the cached data is stored.
+        Defaults to ``$XDG_CACHE_HOME/refidxdb/<class name>``, falling back to
+        ``$HOME/.cache/refidxdb/<class name>``.
         """
-        return str(Path.home()) + "/.cache/refidxdb/" + self.__class__.__name__
+        base = os.environ.get("XDG_CACHE_HOME") or (Path.home() / ".cache")
+        return str(Path(base) / "refidxdb" / self.__class__.__name__)
 
     @property
     @abstractmethod
@@ -44,22 +50,24 @@ class URL(RefIdxDB):
         """
         if self.url.startswith("/") or self.url.startswith("file://"):
             self._logger.info(f"Reading from local file: {self.url}")
-        else:
-            if self.url.split(".")[-1] == "zip":
-                response = urlopen(self.url)
-                total_size = int(response.headers.get("content-length", 0))
-                data = b""
-                with tqdm(
-                    total=total_size,
-                    unit="B",
-                    unit_scale=True,
-                    desc=self.__class__.__name__,
-                    position=position,
-                ) as progress:
-                    while chunk := response.read(CHUNK_SIZE):
-                        data += chunk
-                        progress.update(len(chunk))
-                file = ZipFile(BytesIO(data))
-                file.extractall(path=self.cache_dir)
-            else:
-                raise Exception("Extension not supported for being downloaded")
+            return
+
+        if not self.url.endswith(".zip"):
+            raise ValueError("Extension not supported for being downloaded")
+
+        buffer = bytearray()
+        with urlopen(self.url, timeout=DOWNLOAD_TIMEOUT) as response:
+            total_size = int(response.headers.get("content-length", 0))
+            with tqdm(
+                total=total_size,
+                unit="B",
+                unit_scale=True,
+                desc=self.__class__.__name__,
+                position=position,
+            ) as progress:
+                while chunk := response.read(CHUNK_SIZE):
+                    buffer.extend(chunk)
+                    progress.update(len(chunk))
+
+        with ZipFile(BytesIO(bytes(buffer))) as archive:
+            archive.extractall(path=self.cache_dir)

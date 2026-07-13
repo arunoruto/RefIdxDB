@@ -56,7 +56,17 @@ def db(download, clean) -> None:
 def resolve_dbs(dbs: str):
     if dbs == "all":
         return list(DATABASES.values())
-    return [DATABASES[item.lower()] for item in dbs.split(",")]
+    resolved = []
+    for item in dbs.split(","):
+        key = item.strip().lower()
+        try:
+            resolved.append(DATABASES[key])
+        except KeyError:
+            raise click.BadParameter(
+                f"Unknown database: {item.strip()!r} "
+                f"(choose from {', '.join(DATABASES)} or 'all')"
+            ) from None
+    return resolved
 
 
 def clean_db(dbs: str):

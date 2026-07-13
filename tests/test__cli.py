@@ -27,7 +27,7 @@ def test_resolve_dbs_list():
 
 
 def test_resolve_dbs_unknown():
-    with pytest.raises(KeyError):
+    with pytest.raises(click.BadParameter):
         resolve_dbs("nope")
 
 

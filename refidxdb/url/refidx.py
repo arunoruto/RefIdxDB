@@ -128,7 +128,7 @@ def formula1(c: npt.NDArray):
     """
     Equation 1 in source paper.
     """
-    c_mod = c
+    c_mod = c.copy()
     c_mod[2::2] = c[2::2] ** 2
     return formula2(c_mod)
 

@@ -53,8 +53,6 @@ class RefIdxDB(BaseModel, ABC):
                         target * scale,
                         self.nk["w"],
                         self.nk[n_k],
-                        left=np.min(self.nk[n_k].to_numpy()),
-                        right=np.max(self.nk[n_k].to_numpy()),
                     )
                     for n_k in ["n", "k"]
                 },

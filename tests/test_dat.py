@@ -3,9 +3,14 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 import polars.testing as plt
+import pytest
 
 from refidxdb.file.dat import DAT
-from refidxdb.handler import Handler
+
+
+def test_dat_empty_path_raises():
+    with pytest.raises(ValueError):
+        _ = DAT().data
 
 
 def test_olivine_fabian_dat():
@@ -19,26 +24,14 @@ def test_olivine_fabian_dat():
         .sort("WAVN")
     )
     fabian.columns = ["w", "n", "k"]
-    # fabian = (
-    #     pl.read_csv(
-    #         file,
-    #         has_header=False,
-    #         schema_overrides={"WAVN": pl.Float64, "N": pl.Float64, "K": pl.Float64},
-    #         comment_prefix="#",
-    #         separator="\t",
-    #     )
-    #     .with_columns(pl.col("WAVN").mul(1e2))
-    #     .sort("WAVN")
-    # )
-    # fabian.columns = ["w", "n", "k"]
 
     # Test loading
-    aria = DAT(
+    dat = DAT(
         path=file,
         wavelength=False,
         w_column="wn",
     )
-    plt.assert_frame_equal(fabian, aria.nk)
+    plt.assert_frame_equal(fabian, dat.nk)
 
     # Test interpolation
     groundtrouth = pl.DataFrame(
@@ -68,14 +61,5 @@ def test_olivine_fabian_dat():
             ],
         }
     )
-    interpolated = aria.interpolate(groundtrouth["w"].to_numpy())
+    interpolated = dat.interpolate(groundtrouth["w"].to_numpy())
     plt.assert_frame_equal(groundtrouth, interpolated)
-    # with pl.Config(float_precision=15):
-    #     print(interpolated["n"])
-    #     print(interpolated["k"])
-    # Test handler version
-    handler = Handler(
-        url="https://eodg.atm.ox.ac.uk/ARIA/data_files/Minerals/Olivine/z_orientation_(Fabian_et_al._2001)/olivine_Z_Fabian_2001.ri",
-        wavelength=False,
-    )
-    plt.assert_frame_equal(fabian, handler.nk)

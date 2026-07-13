@@ -1,51 +1,123 @@
-[![PyPI version](https://badge.fury.io/py/refidxdb.svg)](https://badge.fury.io/py/refidxdb)
-[![DeepSource](https://app.deepsource.com/gh/arunoruto/RefIdxDB.svg/?label=code+coverage&show_trend=true&token=6OxGvsq00pW0X5nKcAmq0vOQ)](https://app.deepsource.com/gh/arunoruto/RefIdxDB/)
-[![codecov](https://codecov.io/gh/arunoruto/RefIdxDB/graph/badge.svg?token=NQEJ466GGK)](https://codecov.io/gh/arunoruto/RefIdxDB)
+<!-- PROJECT SHIELDS -->
+[![PyPI version][pypi-shield]][pypi-url]
+[![Codecov][codecov-shield]][codecov-url]
+[![DeepSource][deepsource-shield]][deepsource-url]
+[![Contributors][contributors-shield]][contributors-url]
+[![Forks][forks-shield]][forks-url]
+[![Stargazers][stars-shield]][stars-url]
+[![Issues][issues-shield]][issues-url]
+[![MIT License][license-shield]][license-url]
 
+<!-- PROJECT LOGO -->
 <p align="center">
-  <img src="https://github.com/arunoruto/RefIdxDB/blob/main/.github/logo.png?raw=true" alt="RefIdxDB-Logo"/>
+  <img src="https://github.com/arunoruto/RefIdxDB/blob/main/.github/logo.png?raw=true" alt="RefIdxDB Logo"/>
 </p>
 
-# RefIdxDB
+<div align="center">
 
-Python interface for various refractive index databases
+<h3 align="center">RefIdxDB</h3>
 
-I was tired to download files from here and there, parse them each manually and locally.
-Hence, I copied most of my parsing code into this project, so it can be developed further.
+  <p align="center">
+    Python interface for various refractive index databases
+    <br />
+    <a href="https://pypi.org/project/refidxdb/"><strong>Explore on PyPI »</strong></a>
+    <br />
+    <br />
+    <a href="https://github.com/arunoruto/RefIdxDB/issues/new?labels=bug">Report Bug</a>
+    &middot;
+    <a href="https://github.com/arunoruto/RefIdxDB/issues/new?labels=enhancement">Request Feature</a>
+  </p>
+</div>
 
-> [!note]
-> If your source is not implemented, feel free to open an issue!
-> You can also try to implement it yourself.
-> You can take `refidx` and `aria` as a reference on what needs to be implemented.
+<!-- TABLE OF CONTENTS -->
+<details>
+  <summary>Table of Contents</summary>
+  <ol>
+    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#built-with">Built With</a></li>
+    <li>
+      <a href="#getting-started">Getting Started</a>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
+    <li>
+      <a href="#usage">Usage</a>
+      <ul>
+        <li><a href="#cli">CLI</a></li>
+        <li><a href="#api">API</a></li>
+      </ul>
+    </li>
+    <li><a href="#supported-databases">Supported Databases</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
+  </ol>
+</details>
 
-## Installation
+<!-- ABOUT THE PROJECT -->
+## About The Project
 
-`refidxdb` can be downloaded from PiPy.org:
+Downloading and parsing refractive index databases from various sources is tedious — each database has its own format, conventions, and quirks. RefIdxDB unifies multiple databases under a single API so you can query any supported database the same way.
+
+> If your source is not implemented, feel free to open an issue! You can also try to implement it yourself. Take `refidx` and `aria` as a reference on what needs to be implemented.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- BUILT WITH -->
+## Built With
+
+* [![Python][python-shield]][python-url]
+* [![Pydantic][pydantic-shield]][pydantic-url]
+* [![Polars][polars-shield]][polars-url]
+* [![NumPy][numpy-shield]][numpy-url]
+* [![Rich][rich-shield]][rich-url]
+* [![Plotly][plotly-shield]][plotly-url]
+* [![Streamlit][streamlit-shield]][streamlit-url]
+* [![uv][uv-shield]][uv-url]
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- GETTING STARTED -->
+## Getting Started
+
+### Prerequisites
+
+RefIdxDB requires Python 3.10 or later.
+
+### Installation
 
 ```sh
 pip install refidxdb
 ```
 
-After the `pip` command, the `refidxdb` command should be available.
+After installation, the `refidxdb` command is available in your terminal.
 
-## CLI
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-The main purpose of the CLI is to download and cache the databases locally and interact with it.
-The data will be downloaded to `$HOME/.cache/refidxdb` under a folder corresponding to the class name.
-Please use `refidxdb --help` to explore the functionality.
+<!-- USAGE -->
+## Usage
 
-Example:
+### CLI
+
+The main purpose of the CLI is to download and cache databases locally and interact with the data. Data is stored under `$HOME/.cache/refidxdb` in a folder named after the database class. Use `refidxdb --help` to explore all functionality.
+
+**Download all databases:**
 
 ```console
-$ # Download all databases
-$ # equivalent to refidxdb db --download aria,refidx
 $ refidxdb db --download all
 Downloading the database for RefIdx from https://github.com/polyanskiy/refractiveindex.info-database/releases/download/v2024-08-14/rii-database-2024-08-14.zip to /home/mar/.cache/refidxdb/RefIdx
 Downloading the database for Aria from https://eodg.atm.ox.ac.uk/ARIA/data_files/ARIA.zip to /home/mar/.cache/refidxdb/Aria
 All databases downloaded!
 Bye :)
+```
 
-$ # Replace table with plot to display a graph of the data in the terminal
+**Display data in table or graph form:**
+
+```console
 $ refidxdb show --db aria --data "data_files/Minerals/Olivine/z_orientation_(Fabian_et_al._2001)/olivine_Z_Fabian_2001.ri" --display table --bounds 2.5,15.5
 shape: (2_748, 3)
 ┌───────────┬──────────┬──────────┐
@@ -65,10 +137,14 @@ shape: (2_748, 3)
 │ 15.456643 ┆ 1.405576 ┆ 0.037768 │
 │ 15.485869 ┆ 1.398394 ┆ 0.038299 │
 └───────────┴──────────┴──────────┘
+```
 
-$ # Explore the databases using streamlit
+> Replace `--display table` with `--display plot` to view a terminal graph of the data.
+
+**Explore databases interactively with Streamlit:**
+
+```console
 $ refidxdb explore
-/home/user/Projects/refidxdb/refidxdb
 
   You can now view your Streamlit app in your browser.
 
@@ -76,36 +152,30 @@ $ refidxdb explore
   Network URL: http://10.42.42.212:8501
 ```
 
-## API
+### API
 
-`RefIdxDB`: is the main blueprint class from which all the specific parser classes need to inherit.
-This yields a unified API, i.e., all the instances have the same methods available.
+`RefIdxDB` is the blueprint class from which all database parsers inherit, providing a unified API. Every instance exposes the same methods:
 
-`path`: is the path leading to the wanted file relative to the database.
-This value can be usually copied from the URL.
+`path` — the path to a file within the database (typically copied from the URL).
 
-`data`: represents the raw data obtained from the file found under `path`.
+`data` — the raw content of the file at `path`.
 
-`nk`: are the parsed real and imaginary parts of the refractive index.
-The main column is always the wavelength, i.e., wave numbers will always be transformed into wavelengths.
+`nk` — parsed real (`n`) and imaginary (`k`) parts of the refractive index, with wavelength as the index column (wave numbers are automatically converted).
 
-`interpolate`: you rarely want to use the tables as is, therefore an interpolation method is implemented
-to calculate `n` and `k` for a target wavelength.
+`interpolate` — computes `n` and `k` at a target wavelength using interpolation.
 
-> [!warning]
-> Only wavelengths are currently supported, since they are my main use-case.
-> If you have a proposal on how to add wave number support, please submit an issue/PR.
+> Only wavelengths are currently supported. If you have a proposal for adding wave-number support, please submit an issue or PR.
 
-## Supported DBs
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- SUPPORTED DATABASES -->
+## Supported Databases
 
 ### [refractiveindex.info](https://refractiveindex.info/)
 
-`refractiveindex.info` mainly differentiates between raw data with wavelengths in micrometers,
-or polynomial functions which hold for a certain range. The raw data is contained in `YAML` files,
-with each data type being referenced.
+`refractiveindex.info` provides raw tabulated data (wavelengths in micrometers) and polynomial formulas valid over specified ranges. Data is stored in YAML files.
 
-Currently, supported data types are:
-
+Supported data types:
 - `tabulated_nk`
 - `tabulated_n`
 - `tabulated_k`
@@ -113,27 +183,97 @@ Currently, supported data types are:
 - `formula 2`
 - `formula 3`
 
-### [ARIA - Aerosol Refractive Index Archive](https://eodg.atm.ox.ac.uk/ARIA/)
+### [ARIA — Aerosol Refractive Index Archive](https://eodg.atm.ox.ac.uk/ARIA/)
 
-Aria consists of `ri` files, which are whitespace separated values.
-The header is prefixed by a hashtag `#`. The `FORMAT` value gives information about the column labels.
-Both wavelengths `WAVL` and wave numbers `WAVN` will be read correctly and transformed into wavelengths
-with no SI prefix (meters [m]). The default scales for wavelengths and wave numbers are 1e-6 (micrometers)
-and 1e2 (centimeters^-1).
+ARIA uses `.ri` files with whitespace-separated values and `#`-prefixed headers. The `FORMAT` value specifies column labels. Both `WAVL` (wavelengths) and `WAVN` (wave numbers) are parsed and normalized to wavelengths in meters. Default units are 1e-6 m (micrometers) for wavelengths and 1e2 m⁻¹ (cm⁻¹) for wave numbers.
 
-## Similar projects
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-RefIdxDB is, to the best of my knowledge,
-the only project that tries to unify multiple databases under one API.
-Nevertheless, there are projects that have tried to achieve the same for a single database:
+<!-- ROADMAP -->
+## Roadmap
 
-- [refractiveindex](https://pypi.org/project/refractiveindex/)
-- [PyTMM](https://github.com/kitchenknif/PyTMM) - the API is implemented in
-  [refractiveindex.py](https://github.com/kitchenknif/PyTMM/blob/master/PyTMM/refractiveIndex.py)
-- [PyOptik](https://github.com/MartinPdeS/PyOptik)
+- [x] URL-encoded characters in ARIA paths
+- [x] Fix `refidx` data-nk parsing for mono.yml entries
+- [ ] Additional database sources
+- [ ] Wavelength-range filtering
+- [ ] Wave-number support
 
-## TODO
+See the [open issues](https://github.com/arunoruto/RefIdxDB/issues) for a full list of proposed features and known issues.
 
-- [x] Aria has sometimes spaces or URL encoded characters.
-      Those need to be decoded using `urllib.parse.unquote`.
-- [x] Fix for `refidx`: `data-nk/other/commercial polymers/CR-39/mono.yml`
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- CONTRIBUTING -->
+## Contributing
+
+Contributions are welcome! If you have a suggestion or fix:
+
+1. Fork the repo
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'feat: add AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- LICENSE -->
+## License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- CONTACT -->
+## Contact
+
+Mirza Arnaut — [@arunoruto](https://github.com/arunoruto) — mirza.arnaut45@gmail.com
+
+Project Link: [https://github.com/arunoruto/RefIdxDB](https://github.com/arunoruto/RefIdxDB)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- ACKNOWLEDGMENTS -->
+## Acknowledgments
+
+RefIdxDB is, to the best of my knowledge, the only project that unifies multiple refractive-index databases under one API. Similar work for single databases:
+
+* [refractiveindex](https://pypi.org/project/refractiveindex/)
+* [PyTMM](https://github.com/kitchenknif/PyTMM)
+* [PyOptik](https://github.com/MartinPdeS/PyOptik)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<a id="readme-top"></a>
+
+[pypi-shield]: https://img.shields.io/pypi/v/refidxdb?style=for-the-badge
+[pypi-url]: https://pypi.org/project/refidxdb/
+[codecov-shield]: https://codecov.io/gh/arunoruto/RefIdxDB/graph/badge.svg?token=NQEJ466GGK
+[codecov-url]: https://codecov.io/gh/arunoruto/RefIdxDB
+[deepsource-shield]: https://app.deepsource.com/gh/arunoruto/RefIdxDB.svg/?label=code+coverage&show_trend=true&token=6OxGvsq00pW0X5nKcAmq0vOQ
+[deepsource-url]: https://app.deepsource.com/gh/arunoruto/RefIdxDB/
+[contributors-shield]: https://img.shields.io/github/contributors/arunoruto/RefIdxDB.svg?style=for-the-badge
+[contributors-url]: https://github.com/arunoruto/RefIdxDB/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/arunoruto/RefIdxDB.svg?style=for-the-badge
+[forks-url]: https://github.com/arunoruto/RefIdxDB/network/members
+[stars-shield]: https://img.shields.io/github/stars/arunoruto/RefIdxDB.svg?style=for-the-badge
+[stars-url]: https://github.com/arunoruto/RefIdxDB/stargazers
+[issues-shield]: https://img.shields.io/github/issues/arunoruto/RefIdxDB.svg?style=for-the-badge
+[issues-url]: https://github.com/arunoruto/RefIdxDB/issues
+[license-shield]: https://img.shields.io/github/license/arunoruto/RefIdxDB.svg?style=for-the-badge
+[license-url]: https://github.com/arunoruto/RefIdxDB/blob/main/LICENSE
+[python-shield]: https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white
+[python-url]: https://python.org/
+[pydantic-shield]: https://img.shields.io/badge/Pydantic-E92063?style=for-the-badge&logo=pydantic&logoColor=white
+[pydantic-url]: https://docs.pydantic.dev/
+[polars-shield]: https://img.shields.io/badge/Polars-CD792C?style=for-the-badge&logo=polars&logoColor=white
+[polars-url]: https://pola.rs/
+[numpy-shield]: https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white
+[numpy-url]: https://numpy.org/
+[rich-shield]: https://img.shields.io/badge/Rich-FAE742?style=for-the-badge&logo=python&logoColor=black
+[rich-url]: https://github.com/Textualize/rich
+[plotly-shield]: https://img.shields.io/badge/Plotly-3F4F75?style=for-the-badge&logo=plotly&logoColor=white
+[plotly-url]: https://plotly.com/python/
+[streamlit-shield]: https://img.shields.io/badge/Streamlit-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white
+[streamlit-url]: https://streamlit.io/
+[uv-shield]: https://img.shields.io/badge/uv-261230?style=for-the-badge&logo=uv&logoColor=white
+[uv-url]: https://docs.astral.sh/uv/

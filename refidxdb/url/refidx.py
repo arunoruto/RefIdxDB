@@ -28,7 +28,7 @@ class RefIdx(URL):
     @cached_property
     def data(self):
         if self.path is None:
-            raise Exception("Path is not set, cannot retrieve any data!")
+            raise ValueError("Path is not set, cannot retrieve any data!")
 
         if self.path.startswith("/"):
             absolute_path = self.path
@@ -43,7 +43,7 @@ class RefIdx(URL):
     def nk(self):
         nk = pl.DataFrame(schema={"w": float, "n": float, "k": float})
         storage = []
-        for i, data in enumerate(self.data["DATA"]):
+        for data in self.data["DATA"]:
             match data["type"]:
                 case "tabulated nk":
                     storage.append(
@@ -81,7 +81,7 @@ class RefIdx(URL):
                 case "formula 3":
                     storage.append(formula(3, data))
                 case _:
-                    raise Exception(f"Unsupported data type: {data['type']}")
+                    raise ValueError(f"Unsupported data type: {data['type']}")
 
         # TODO: split table data from formulas
         # Use tables for interpolation and formulas for explicit calculation
@@ -107,18 +107,8 @@ def formula(number: int, data):
             f = formula2(coefficients)
         case 3:
             f = formula3(coefficients)
-        case 4:
-            raise Exception(f"Support incomming for formula {number}")
-        case 5:
-            raise Exception(f"Support incomming for formula {number}")
-        case 6:
-            raise Exception(f"Support incomming for formula {number}")
-        case 7:
-            raise Exception(f"Support incomming for formula {number}")
-        case 8:
-            raise Exception(f"Support incomming for formula {number}")
-        case 9:
-            raise Exception(f"Support incomming for formula {number}")
+        case _:
+            raise NotImplementedError(f"Support incoming for formula {number}")
     w = np.linspace(w_range[0], w_range[1], 100)
     return pl.DataFrame({"w": w, "n": f(w)}).with_columns(k=pl.lit(None))
 

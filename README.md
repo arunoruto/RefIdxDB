@@ -42,10 +42,10 @@ $ # equivalent to refidxdb db --download aria,refidx
 $ refidxdb db --download all
 Downloading the database for RefIdx from https://github.com/polyanskiy/refractiveindex.info-database/releases/download/v2024-08-14/rii-database-2024-08-14.zip to /home/mar/.cache/refidxdb/RefIdx
 Downloading the database for Aria from https://eodg.atm.ox.ac.uk/ARIA/data_files/ARIA.zip to /home/mar/.cache/refidxdb/Aria
-All databases downlaoded!
+All databases downloaded!
 Bye :)
 
-$ # Replace table with plot to diplay a graph of the data in the terminal
+$ # Replace table with plot to display a graph of the data in the terminal
 $ refidxdb show --db aria --data "data_files/Minerals/Olivine/z_orientation_(Fabian_et_al._2001)/olivine_Z_Fabian_2001.ri" --display table --bounds 2.5,15.5
 shape: (2_748, 3)
 ┌───────────┬──────────┬──────────┐

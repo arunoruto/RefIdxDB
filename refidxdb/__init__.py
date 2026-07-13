@@ -5,7 +5,7 @@ from refidxdb.refidxdb import RefIdxDB
 from refidxdb.url.aria import Aria
 from refidxdb.url.refidx import RefIdx
 
-__version__ = "0.4.0"
+__version__ = "1.0.0"
 
 __all__ = [
     "Aria",

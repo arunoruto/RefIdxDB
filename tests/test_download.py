@@ -37,7 +37,9 @@ def _zip_bytes(name: str, content: str) -> bytes:
 def test_download_extracts_zip(monkeypatch, tmp_path):
     monkeypatch.setenv("XDG_CACHE_HOME", str(tmp_path))
     monkeypatch.setattr(
-        url_mod, "urlopen", lambda u, timeout=None: FakeResponse(_zip_bytes("hi.txt", "x"))
+        url_mod,
+        "urlopen",
+        lambda u, timeout=None: FakeResponse(_zip_bytes("hi.txt", "x")),
     )
 
     Aria().download()
@@ -59,7 +61,9 @@ def test_download_local_file_is_noop(monkeypatch):
 
 
 def test_download_rejects_non_zip(monkeypatch):
-    monkeypatch.setattr(Aria, "url", property(lambda self: "https://x.example/file.txt"))
+    monkeypatch.setattr(
+        Aria, "url", property(lambda self: "https://x.example/file.txt")
+    )
     with pytest.raises(ValueError):
         Aria().download()
 

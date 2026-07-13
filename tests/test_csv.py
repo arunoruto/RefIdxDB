@@ -38,9 +38,9 @@ def test_csv_wavenumber_to_wavelength(carbon_csv):
 def test_csv_wavenumber_passthrough(carbon_csv):
     raw = _raw(carbon_csv)
     # wavenumber in / wavenumber out: no inversion, just the 1e2 scale.
-    expected = pl.DataFrame(
-        {"w": raw["w"] * 1e2, "n": raw["n"], "k": raw["k"]}
-    ).sort("w")
+    expected = pl.DataFrame({"w": raw["w"] * 1e2, "n": raw["n"], "k": raw["k"]}).sort(
+        "w"
+    )
 
     csv = CSV(path=carbon_csv, w_column="wn", wavelength=False)
     plt.assert_frame_equal(expected, csv.nk)

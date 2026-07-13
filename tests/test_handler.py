@@ -19,7 +19,9 @@ def test_dispatch_csv_and_dat():
 
 
 def test_dispatch_hosts():
-    refidx = Handler(url=_url("https://refractiveindex.info/data/main/Fe/nk/Querry.yml"))
+    refidx = Handler(
+        url=_url("https://refractiveindex.info/data/main/Fe/nk/Querry.yml")
+    )
     aria = Handler(url=_url("https://eodg.atm.ox.ac.uk/ARIA/data_files/x.ri"))
     assert type(refidx.source).__name__ == "RefIdx"
     assert type(aria.source).__name__ == "Aria"

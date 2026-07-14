@@ -1,38 +1,31 @@
 name: Testing
-
 on:
   workflow_call:
   workflow_dispatch:
   pull_request:
   push:
     branches: [main]
-
 jobs:
   unittest:
     name: PyTest
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Install uv
         id: setup-python
         uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
-
       - uses: actions/cache@v4
         id: cache-env
         with:
           path: .venv
           key: ${{ runner.os }}-uv-${{ steps.setup-python.outputs.uv-version }}-env-${{ hashFiles('uv.lock') }}
-
       - name: Setup venv for testing & Install dependencies
         if: steps.cache-env.outputs.cache-hit != 'true'
         run: |
           uv venv
           uv sync --group test
-
       - name: Cache databases
         id: cache-databases
         uses: actions/cache@v4
@@ -40,19 +33,16 @@ jobs:
           path: ~/.cache/refidxdb
           # Invalidate when a database URL (and thus its version) changes.
           key: ${{ runner.os }}-databases-${{ hashFiles('refidxdb/url/aria.py', 'refidxdb/url/refidx.py') }}
-
       - name: Download databases
         # Best-effort: on a network hiccup the cache-relative tests just skip.
         if: steps.cache-databases.outputs.cache-hit != 'true'
         continue-on-error: true
         run: uv run refidxdb db --download all
-
       - name: Test and coverage report with pytest
         # The real-download test is marked `network`; the cache-relative
         # assertions run when the download above populated the cache and skip
         # otherwise, so this run stays deterministic.
         run: uv run pytest -m "not network" --cov --cov-report xml --junitxml=junit.xml -o junit_family=legacy
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
@@ -62,3 +52,36 @@ jobs:
             junit.xml
             htmlcov/
           retention-days: 7
+  deepsource-coverage-reporter:
+    runs-on: ubuntu-latest
+    name: DeepSource coverage reporter
+    needs: unittest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+      - name: Report test coverage to DeepSource
+        uses: deepsourcelabs/test-coverage-action@master
+        with:
+          key: python
+          coverage-file: coverage.xml
+          dsn: ${{ secrets.DEEPSOURCE_DSN }}
+  codecov-coverage-reporter:
+    runs-on: ubuntu-latest
+    name: CodeCov coverage reporter
+    needs: unittest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+      - name: Upload test results to Codecov
+        if: ${{ !cancelled() }}
+        uses: codecov/test-results-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
